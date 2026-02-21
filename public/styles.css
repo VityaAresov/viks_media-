@@ -88,8 +88,8 @@ a {
 }
 
 .topbar-search-inline {
-  width: clamp(360px, 42vw, 780px);
-  margin-left: 12px;
+  width: min(780px, calc(100% - 520px));
+  margin-left: 0;
   position: relative;
   display: none;
   z-index: 340;
@@ -97,6 +97,9 @@ a {
 
 .topbar.search-open .topbar-search-inline {
   display: block;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .search-inline-form {
@@ -105,16 +108,10 @@ a {
   background: linear-gradient(180deg, #20242d, #1b1f27);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07), 0 8px 26px rgba(0, 0, 0, 0.35);
   display: grid;
-  grid-template-columns: 40px 1fr 34px;
+  grid-template-columns: 1fr 34px;
   align-items: center;
   gap: 8px;
-  padding: 0 10px;
-}
-
-.search-inline-icon {
-  color: #a2abc0;
-  font-size: 28px;
-  text-align: center;
+  padding: 0 14px;
 }
 
 .search-inline-input {
@@ -122,12 +119,13 @@ a {
   border: 0;
   background: transparent;
   color: #edf2fb;
-  font-size: 30px;
+  font-size: 16px;
   padding: 0;
 }
 
 .search-inline-input::placeholder {
   color: #9aa4ba;
+  font-size: 16px;
 }
 
 .search-inline-clear {
@@ -1755,8 +1753,7 @@ textarea,
   }
 
   .topbar-search-inline {
-    width: clamp(280px, 56vw, 560px);
-    margin-left: 6px;
+    width: min(560px, calc(100% - 300px));
   }
 
   .profile-hero-body {
@@ -1794,6 +1791,7 @@ textarea,
     top: 8px;
     width: auto;
     margin-left: 0;
+    transform: none;
   }
 
   .wordmark {
