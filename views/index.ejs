@@ -1,97 +1,112 @@
 <%- include("partials/head", { pageTitle, query }) %>
 
-<section class="layout-grid">
-  <aside class="sidebar sidebar-left">
-    <div class="panel">
-      <h3>Categories</h3>
-      <div class="category-list">
-        <a class="category-link <%= !filters.category ? 'is-active' : '' %>" href="/">All publications</a>
+<section class="app-shell">
+  <aside class="rail-left">
+    <div class="rail-block">
+      <a class="nav-pill <%= activePath === '/' && !filters.category && !filters.tag && !filters.q ? 'is-active' : '' %>" href="/">
+        <span class="nav-icon">🔥</span>
+        <span>Popular</span>
+      </a>
+      <a class="nav-pill <%= filters.q ? 'is-active' : '' %>" href="/search?q=<%= encodeURIComponent(filters.q || '') %>">
+        <span class="nav-icon">⏺</span>
+        <span>Fresh</span>
+      </a>
+      <a class="nav-pill <%= activePath === '/bookmarks' ? 'is-active' : '' %>" href="<%= currentUser ? '/bookmarks' : '/login' %>">
+        <span class="nav-icon">▣</span>
+        <span>My feed</span>
+      </a>
+      <a class="nav-pill <%= activePath === '/account' ? 'is-active' : '' %>" href="<%= currentUser ? '/account' : '/login' %>">
+        <span class="nav-icon">◔</span>
+        <span>Profile</span>
+      </a>
+      <a class="nav-pill <%= activePath === '/moderation/queue' ? 'is-active' : '' %>" href="<%= canModerate ? '/moderation/queue' : '/' %>">
+        <span class="nav-icon">◆</span>
+        <span>Rating</span>
+      </a>
+      <a class="nav-pill" href="/">
+        <span class="nav-icon">◎</span>
+        <span>Quiz</span>
+      </a>
+    </div>
+
+    <div class="rail-section">
+      <h4>Topics</h4>
+      <div class="topic-list">
         <% for (const category of categories) { %>
         <a
-          class="category-link <%= filters.category === category.slug ? 'is-active' : '' %>"
+          class="topic-row <%= filters.category === category.slug ? 'is-active' : '' %>"
           href="/?<%= new URLSearchParams({ category: category.slug, tag: filters.tag || '', q: filters.q || '' }).toString() %>"
         >
+          <span class="topic-avatar"><%= category.name.charAt(0).toUpperCase() %></span>
           <span><%= category.name %></span>
-          <small><%= category.description %></small>
         </a>
         <% } %>
       </div>
     </div>
 
-    <div class="panel">
-      <h3>Popular tags</h3>
+    <div class="rail-section">
+      <h4>Tags</h4>
       <div class="tag-cloud">
-        <% for (const tag of popularTags.slice(0, 16)) { %>
+        <% for (const tag of popularTags.slice(0, 10)) { %>
         <a
           class="tag-chip <%= selectedTag && selectedTag.slug === tag.slug ? 'is-active' : '' %>"
           href="/?<%= new URLSearchParams({ category: filters.category || '', tag: tag.slug, q: filters.q || '' }).toString() %>"
         >
-          #<%= tag.slug %> <span><%= tag.usage_count %></span>
+          #<%= tag.slug %>
         </a>
         <% } %>
       </div>
     </div>
   </aside>
 
-  <section class="feed">
-    <header class="feed-header">
-      <div>
-        <h1>
-          <%= query ? `Search: ${query}` : selectedTag ? `#${selectedTag.slug}` : selectedCategory ? selectedCategory.name : 'Media feed' %>
-        </h1>
-        <p>
-          <% if (query) { %>
-          Search results across title, body, author, tags, and categories.
-          <% } else if (selectedTag) { %>
-          Tagged publications from creators and editorial teams.
-          <% } else if (selectedCategory) { %>
-          <%= selectedCategory.description %>
-          <% } else { %>
-          Publications by videographers, photographers, and creator teams.
-          <% } %>
-        </p>
-      </div>
-      <% if (currentUser && currentUser.email_verified) { %>
-      <a class="btn" href="/posts/new">Publish now</a>
-      <% } %>
-    </header>
-
-    <% if (posts.length === 0) { %>
-    <div class="panel">
-      <h3>No publications yet</h3>
-      <p>Try another filter or create the first publication.</p>
-      <% if (currentUser && currentUser.email_verified) { %>
-      <a class="btn" href="/posts/new">Create publication</a>
-      <% } else if (!currentUser) { %>
-      <a class="btn" href="/register">Create account</a>
-      <% } %>
+  <section class="feed-main">
+    <div class="feed-date-row">
+      <span><%= new Date().toLocaleDateString("en-US", { day: "numeric", month: "long" }) %></span>
+      <span class="chevron">▾</span>
     </div>
-    <% } %>
+
+    <section class="top-news-card">
+      <h3>Top news</h3>
+      <div class="top-news-list">
+        <% for (const item of trending) { %>
+        <a class="top-news-item" href="/posts/<%= item.id %>">
+          <span class="headline"><%= item.title %></span>
+          <span class="count">💬 <%= item.like_count %></span>
+        </a>
+        <% } %>
+      </div>
+      <a class="top-news-more" href="/">Show more</a>
+    </section>
 
     <div class="post-stream">
+      <% if (posts.length === 0) { %>
+      <article class="post-card">
+        <h3>No publications yet</h3>
+        <p>Try another filter or publish the first post.</p>
+      </article>
+      <% } %>
+
       <% for (const post of posts) { %>
       <article class="post-card <%= post.is_hidden ? 'post-hidden' : '' %>">
-        <header class="post-meta">
-          <a class="meta-user" href="/u/<%= post.author_username %>">
+        <header class="author-row">
+          <a class="author-meta" href="/u/<%= post.author_username %>">
             <img
               src="<%= post.author_avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
               alt="<%= post.author_username %>"
             />
             <div>
               <strong><%= post.author_username %></strong>
-              <span><%= post.created_relative %></span>
+              <span>
+                <a href="/categories/<%= post.category_slug %>"><%= post.category_name %></a> • <%= post.created_relative %>
+              </span>
             </div>
           </a>
-          <a class="category-pill" href="/categories/<%= post.category_slug %>"><%= post.category_name %></a>
+          <button class="follow-btn" type="button">Follow</button>
         </header>
-
-        <% if (post.is_hidden) { %>
-        <p class="hidden-note">This publication is hidden by moderation. Reason: <%= post.hidden_reason || 'not specified' %>.</p>
-        <% } %>
 
         <a class="post-title" href="/posts/<%= post.id %>"><%= post.title %></a>
         <p class="post-excerpt"><%= post.excerpt %></p>
-        <div class="post-meta-line">
+        <div class="meta-row">
           <span><%= post.reading_time_minutes %> min read</span>
           <% if (post.tags.length) { %>
           <span>
@@ -125,28 +140,19 @@
           <% if (currentUser && currentUser.email_verified) { %>
           <form method="post" action="/posts/<%= post.id %>/like">
             <button class="btn btn-small <%= post.liked_by_me ? 'btn-like-active' : 'btn-muted' %>" type="submit">
-              <%= post.liked_by_me ? 'Liked' : 'Like' %> (<%= post.like_count %>)
+              Like <%= post.like_count %>
             </button>
           </form>
           <form method="post" action="/posts/<%= post.id %>/bookmark">
             <button class="btn btn-small <%= post.bookmarked_by_me ? 'btn-bookmark-active' : 'btn-muted' %>" type="submit">
-              <%= post.bookmarked_by_me ? 'Bookmarked' : 'Bookmark' %> (<%= post.bookmark_count %>)
+              Save <%= post.bookmark_count %>
             </button>
           </form>
           <% } else { %>
-          <a class="btn btn-small btn-muted" href="/login">Like (<%= post.like_count %>)</a>
+          <a class="btn btn-small btn-muted" href="/login">Like <%= post.like_count %></a>
           <% } %>
-          <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>#comments">Comments (<%= post.comment_count %>)</a>
+          <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>#comments">Comments <%= post.comment_count %></a>
           <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>">Open</a>
-          <% if (currentUser && currentUser.email_verified) { %>
-          <form method="post" action="/reports" class="inline-form">
-            <input type="hidden" name="target_type" value="post" />
-            <input type="hidden" name="target_id" value="<%= post.id %>" />
-            <input type="hidden" name="reason_code" value="abuse" />
-            <input type="hidden" name="reason_text" value="Reported from feed" />
-            <button class="btn btn-small btn-muted" type="submit">Report</button>
-          </form>
-          <% } %>
         </footer>
       </article>
       <% } %>
@@ -155,40 +161,42 @@
     <% if (pagination.pages > 1) { %>
     <nav class="pagination">
       <% if (pagination.page > 1) { %>
-      <a href="/?<%= new URLSearchParams({ category: filters.category || '', tag: filters.tag || '', q: filters.q || '', page: pagination.page - 1 }).toString() %>">Previous</a>
+      <a href="/?<%= new URLSearchParams({ category: filters.category || '', tag: filters.tag || '', q: filters.q || '', page: pagination.page - 1 }).toString() %>">
+        Previous
+      </a>
       <% } %>
       <span>Page <%= pagination.page %> of <%= pagination.pages %></span>
       <% if (pagination.page < pagination.pages) { %>
-      <a href="/?<%= new URLSearchParams({ category: filters.category || '', tag: filters.tag || '', q: filters.q || '', page: pagination.page + 1 }).toString() %>">Next</a>
+      <a href="/?<%= new URLSearchParams({ category: filters.category || '', tag: filters.tag || '', q: filters.q || '', page: pagination.page + 1 }).toString() %>">
+        Next
+      </a>
       <% } %>
     </nav>
     <% } %>
   </section>
 
-  <aside class="sidebar sidebar-right">
-    <div class="panel">
-      <h3>Trending posts</h3>
-      <div class="compact-list">
-        <% for (const item of trending) { %>
-        <a href="/posts/<%= item.id %>">
-          <strong><%= item.title %></strong>
-          <span>@<%= item.author_username %> • <%= item.like_count %> likes</span>
-        </a>
-        <% } %>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3>Top creators</h3>
-      <div class="compact-list">
-        <% for (const creator of creators) { %>
-        <a href="/u/<%= creator.username %>">
-          <strong>@<%= creator.username %></strong>
-          <span><%= creator.post_count %> posts • <%= creator.received_likes %> likes</span>
-        </a>
-        <% } %>
-      </div>
-    </div>
+  <aside class="rail-right">
+    <section class="top-blogs-card">
+      <h3>Top blogs</h3>
+      <ol class="rank-list">
+        <% creators.slice(0, 5).forEach((creator, idx) => { %>
+        <li>
+          <span class="rank-num"><%= idx + 1 %></span>
+          <a href="/u/<%= creator.username %>" class="rank-user">
+            <img
+              src="<%= creator.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+              alt="<%= creator.username %>"
+            />
+            <span>
+              <strong><%= creator.username %></strong>
+              <small><%= creator.received_likes %> likes</small>
+            </span>
+          </a>
+        </li>
+        <% }) %>
+      </ol>
+      <a class="rank-more" href="/">View full top</a>
+    </section>
   </aside>
 </section>
 

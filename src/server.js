@@ -293,6 +293,7 @@ app.use((req, res, next) => {
   res.locals.categories = db.getAllCategories();
   res.locals.popularTags = db.getPopularTags(24);
   res.locals.query = typeof req.query.q === "string" ? req.query.q : "";
+  res.locals.activePath = req.path;
   res.locals.flash = req.session.flash || null;
   res.locals.canModerate = Boolean(req.currentUser && db.canUserModerate(req.currentUser));
   res.locals.canAdmin = Boolean(req.currentUser && db.canUserAdmin(req.currentUser));

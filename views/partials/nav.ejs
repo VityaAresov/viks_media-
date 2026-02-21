@@ -1,37 +1,26 @@
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="/">
-      <span class="brand-mark">VM</span>
-      <span class="brand-text">Viks Media</span>
-    </a>
-    <form class="nav-search" action="/search" method="get">
-      <input type="search" name="q" placeholder="Search creators, tags, posts..." value="<%= query || '' %>" />
-    </form>
-    <nav class="topbar-nav">
-      <a href="/">Feed</a>
-      <a href="/categories/videography">Videography</a>
-      <a href="/categories/photography">Photography</a>
-      <a href="/categories/creators">Creators</a>
-      <% if (currentUser && currentUser.email_verified) { %>
-      <a href="/bookmarks">Bookmarks</a>
-      <% } %>
-      <% if (canModerate) { %>
-      <a href="/moderation/queue">Moderation</a>
-      <% } %>
-      <% if (canAdmin) { %>
-      <a href="/admin/users">Admin</a>
-      <% } %>
-    </nav>
+    <a class="wordmark" href="/">VIKS MEDIA</a>
+    <div class="topbar-spacer"></div>
     <div class="topbar-actions">
+      <a class="icon-btn" href="/search" aria-label="Search">
+        <span>⌕</span>
+      </a>
       <% if (currentUser) { %>
-      <a class="btn btn-muted" href="/posts/new">Create post</a>
-      <a class="btn btn-muted" href="/account">@<%= currentUser.username %></a>
+      <a class="pill-btn pill-ghost" href="<%= currentUser.email_verified ? '/posts/new' : '/account' %>">
+        <span class="pill-icon">✎</span>
+        <span>Write</span>
+      </a>
+      <a class="pill-btn pill-user" href="/account">@<%= currentUser.username %></a>
       <form method="post" action="/logout">
-        <button class="btn btn-danger" type="submit">Log out</button>
+        <button class="pill-btn pill-primary" type="submit">Log out</button>
       </form>
       <% } else { %>
-      <a class="btn btn-muted" href="/login">Log in</a>
-      <a class="btn" href="/register">Register</a>
+      <a class="pill-btn pill-ghost" href="/login">
+        <span class="pill-icon">✎</span>
+        <span>Write</span>
+      </a>
+      <a class="pill-btn pill-primary" href="/login">Log in</a>
       <% } %>
     </div>
   </div>
