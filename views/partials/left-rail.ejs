@@ -1,7 +1,13 @@
 <%
-  const f = typeof filters === 'object' && filters ? filters : { category: '', tag: '', q: '' };
-  const currentTag = selectedTag && selectedTag.slug ? selectedTag.slug : '';
-  const path = typeof activePath === 'string' ? activePath : '';
+  const f = typeof filters === "object" && filters ? filters : { category: "", tag: "", q: "" };
+  const currentTag =
+    typeof selectedTag !== "undefined" && selectedTag && selectedTag.slug ? selectedTag.slug : "";
+  const path = typeof activePath === "string" ? activePath : "";
+  const q = typeof query === "string" ? query : "";
+  const user = typeof currentUser !== "undefined" ? currentUser : null;
+  const canMod = Boolean(typeof canModerate !== "undefined" && canModerate);
+  const categoriesList = typeof categories !== "undefined" && Array.isArray(categories) ? categories : [];
+  const tagsList = typeof popularTags !== "undefined" && Array.isArray(popularTags) ? popularTags : [];
 %>
 <aside class="rail-left">
   <div class="rail-block">
@@ -9,23 +15,23 @@
       <span class="nav-icon">&#x1F525;</span>
       <span>Popular</span>
     </a>
-    <a class="nav-pill <%= !f.category && !f.tag && f.q ? 'is-active' : '' %>" href="/search?q=<%= encodeURIComponent(query || '') %>">
+    <a class="nav-pill <%= !f.category && !f.tag && f.q ? 'is-active' : '' %>" href="/search?q=<%= encodeURIComponent(q) %>">
       <span class="nav-icon">&#x23F2;</span>
       <span>Fresh</span>
     </a>
-    <a class="nav-pill <%= path === '/bookmarks' ? 'is-active' : '' %>" href="<%= currentUser ? '/bookmarks' : '/login' %>">
+    <a class="nav-pill <%= path === '/bookmarks' ? 'is-active' : '' %>" href="<%= user ? '/bookmarks' : '/login' %>">
       <span class="nav-icon">&#x1F4CC;</span>
       <span>My feed</span>
     </a>
-    <a class="nav-pill <%= path === '/account' ? 'is-active' : '' %>" href="<%= currentUser ? '/account' : '/login' %>">
+    <a class="nav-pill <%= path === '/account' ? 'is-active' : '' %>" href="<%= user ? '/account' : '/login' %>">
       <span class="nav-icon">&#x1F464;</span>
       <span>Profile</span>
     </a>
-    <a class="nav-pill <%= path === '/moderation/queue' ? 'is-active' : '' %>" href="<%= canModerate ? '/moderation/queue' : '/account' %>">
+    <a class="nav-pill <%= path === '/moderation/queue' ? 'is-active' : '' %>" href="<%= canMod ? '/moderation/queue' : '/account' %>">
       <span class="nav-icon">&#x1F4CA;</span>
       <span>Rating</span>
     </a>
-    <a class="nav-pill" href="<%= currentUser ? '/notifications' : '/login' %>">
+    <a class="nav-pill" href="<%= user ? '/notifications' : '/login' %>">
       <span class="nav-icon">&#x1F4AC;</span>
       <span>Messages</span>
     </a>
@@ -34,7 +40,7 @@
   <div class="rail-section">
     <h4>Topics</h4>
     <div class="topic-list">
-      <% for (const category of categories) { %>
+      <% for (const category of categoriesList) { %>
       <a
         class="topic-row <%= f.category === category.slug ? 'is-active' : '' %>"
         href="/?<%= new URLSearchParams({ category: category.slug, tag: f.tag || '', q: f.q || '' }).toString() %>"
@@ -49,7 +55,7 @@
   <div class="rail-section">
     <h4>Tags</h4>
     <div class="tag-cloud">
-      <% for (const tag of popularTags.slice(0, 9)) { %>
+      <% for (const tag of tagsList.slice(0, 9)) { %>
       <a
         class="tag-chip <%= currentTag === tag.slug || f.tag === tag.slug ? 'is-active' : '' %>"
         href="/?<%= new URLSearchParams({ category: f.category || '', tag: tag.slug, q: f.q || '' }).toString() %>"

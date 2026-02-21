@@ -1,11 +1,17 @@
-<%- include("partials/head", { pageTitle, query }) %>
+<%- include("partials/head", { pageTitle, query: typeof query === "string" ? query : "" }) %>
 <%
   const f = filters || { category: "", tag: "", q: "" };
   const dateLabel = new Date().toLocaleDateString("en-US", { day: "numeric", month: "long" });
+  const trendingItems = typeof trending !== "undefined" && Array.isArray(trending) ? trending : [];
+  const postsList = typeof posts !== "undefined" && Array.isArray(posts) ? posts : [];
+  const pager =
+    typeof pagination !== "undefined" && pagination
+      ? pagination
+      : { page: 1, pages: 1, total: postsList.length };
 %>
 
 <section class="app-shell">
-  <%- include("partials/left-rail", { filters: f, selectedTag }) %>
+  <%- include("partials/left-rail", { filters: f, selectedTag: typeof selectedTag !== "undefined" ? selectedTag : null }) %>
 
   <section class="feed-main">
     <div class="feed-date-row">
@@ -16,7 +22,7 @@
     <section class="top-news-card">
       <h3>Top news</h3>
       <div class="top-news-list">
-        <% for (const item of trending.slice(0, 6)) { %>
+        <% for (const item of trendingItems.slice(0, 6)) { %>
         <a class="top-news-item" href="/posts/<%= item.id %>">
           <span class="headline"><%= item.title %></span>
           <span class="count"><%= item.like_count %></span>
@@ -27,14 +33,14 @@
     </section>
 
     <div class="post-stream">
-      <% if (posts.length === 0) { %>
+      <% if (postsList.length === 0) { %>
       <article class="post-card">
         <h3>No publications yet</h3>
         <p class="fine-print">Try another filter or publish the first post.</p>
       </article>
       <% } %>
 
-      <% for (const post of posts) { %>
+      <% for (const post of postsList) { %>
       <article class="post-card <%= post.is_hidden ? 'post-hidden' : '' %>">
         <header class="author-row">
           <a class="author-meta" href="/u/<%= post.author_username %>">
@@ -105,16 +111,16 @@
       <% } %>
     </div>
 
-    <% if (pagination.pages > 1) { %>
+    <% if (pager.pages > 1) { %>
     <nav class="pagination">
-      <% if (pagination.page > 1) { %>
-      <a href="/?<%= new URLSearchParams({ category: f.category || '', tag: f.tag || '', q: f.q || '', page: pagination.page - 1 }).toString() %>">
+      <% if (pager.page > 1) { %>
+      <a href="/?<%= new URLSearchParams({ category: f.category || '', tag: f.tag || '', q: f.q || '', page: pager.page - 1 }).toString() %>">
         Previous
       </a>
       <% } %>
-      <span>Page <%= pagination.page %> of <%= pagination.pages %></span>
-      <% if (pagination.page < pagination.pages) { %>
-      <a href="/?<%= new URLSearchParams({ category: f.category || '', tag: f.tag || '', q: f.q || '', page: pagination.page + 1 }).toString() %>">
+      <span>Page <%= pager.page %> of <%= pager.pages %></span>
+      <% if (pager.page < pager.pages) { %>
+      <a href="/?<%= new URLSearchParams({ category: f.category || '', tag: f.tag || '', q: f.q || '', page: pager.page + 1 }).toString() %>">
         Next
       </a>
       <% } %>

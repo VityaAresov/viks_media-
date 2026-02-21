@@ -1,18 +1,25 @@
 <header class="topbar">
-  <% const noteList = Array.isArray(notifications) ? notifications : []; %>
+  <%
+    const noteList = typeof notifications !== "undefined" && Array.isArray(notifications) ? notifications : [];
+    const pathValue = typeof activePath === "string" ? activePath : "";
+    const q = typeof query === "string" ? query : "";
+    const user = typeof currentUser !== "undefined" ? currentUser : null;
+    const canMod = Boolean(typeof canModerate !== "undefined" && canModerate);
+    const canAdminFlag = Boolean(typeof canAdmin !== "undefined" && canAdmin);
+  %>
   <div class="topbar-inner">
     <a class="wordmark" href="/">VIKS</a>
-    <% if (activePath && activePath !== '/') { %>
+    <% if (pathValue && pathValue !== "/") { %>
     <a class="back-btn" href="/" aria-label="Back">&#x2039;</a>
     <% } %>
 
     <div class="topbar-spacer"></div>
 
-    <a class="icon-btn" href="/search?q=<%= encodeURIComponent(query || '') %>" aria-label="Search">
+    <a class="icon-btn" href="/search?q=<%= encodeURIComponent(q) %>" aria-label="Search">
       <span>&#x1F50D;</span>
     </a>
 
-    <% if (currentUser) { %>
+    <% if (user) { %>
     <details class="notify-wrap">
       <summary class="icon-btn <%= noteList.length ? 'has-alert' : '' %>" aria-label="Notifications">
         <span>&#x1F514;</span>
@@ -42,7 +49,7 @@
       </section>
     </details>
 
-    <a class="pill-btn pill-ghost" href="<%= currentUser.email_verified ? '/posts/new' : '/account' %>">
+    <a class="pill-btn pill-ghost" href="<%= user.email_verified ? '/posts/new' : '/account' %>">
       <span class="pill-icon">&#x270E;</span>
       <span>Write</span>
     </a>
@@ -50,16 +57,16 @@
     <details class="user-menu-wrap">
       <summary class="user-chip" aria-label="Account menu">
         <img
-          src="<%= currentUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
-          alt="<%= currentUser.username %>"
+          src="<%= user.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+          alt="<%= user.username %>"
         />
         <span class="caret">&#x2304;</span>
       </summary>
       <div class="user-dropdown">
         <a href="/account">My profile</a>
         <a href="/bookmarks">Bookmarks</a>
-        <% if (canModerate) { %><a href="/moderation/queue">Moderation</a><% } %>
-        <% if (canAdmin) { %><a href="/admin/users">Admin</a><% } %>
+        <% if (canMod) { %><a href="/moderation/queue">Moderation</a><% } %>
+        <% if (canAdminFlag) { %><a href="/admin/users">Admin</a><% } %>
         <form method="post" action="/logout">
           <button type="submit">Log out</button>
         </form>

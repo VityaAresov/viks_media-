@@ -1,8 +1,12 @@
-<% if (flash && flash.message) { %>
-<div class="flash flash-<%= flash.type === 'success' ? 'success' : 'error' %>"><%= flash.message %></div>
+<%
+  const flashData = typeof flash !== "undefined" ? flash : null;
+  const user = typeof currentUser !== "undefined" ? currentUser : null;
+%>
+<% if (flashData && flashData.message) { %>
+<div class="flash flash-<%= flashData.type === 'success' ? 'success' : 'error' %>"><%= flashData.message %></div>
 <% } %>
 
-<% if (currentUser && !currentUser.email_verified) { %>
+<% if (user && !user.email_verified) { %>
 <div class="flash flash-warning">
   <strong>Email not verified.</strong> Verify to publish, comment, like, bookmark, and report.
   <form method="post" action="/resend-verification" class="inline-form">
@@ -11,6 +15,6 @@
 </div>
 <% } %>
 
-<% if (currentUser && currentUser.status !== "active") { %>
-<div class="flash flash-error">Your account is currently <%= currentUser.status %>.</div>
+<% if (user && user.status !== "active") { %>
+<div class="flash flash-error">Your account is currently <%= user.status %>.</div>
 <% } %>

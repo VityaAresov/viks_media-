@@ -1,6 +1,6 @@
 <%
-  const topCreators = Array.isArray(creators) ? creators : [];
-  const topTrending = Array.isArray(trending) ? trending : [];
+  const topCreators = typeof creators !== "undefined" && Array.isArray(creators) ? creators : [];
+  const topTrending = typeof trending !== "undefined" && Array.isArray(trending) ? trending : [];
 %>
 <aside class="rail-right">
   <section class="top-blogs-card">
