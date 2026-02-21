@@ -6,6 +6,32 @@
     const user = typeof currentUser !== "undefined" ? currentUser : null;
     const canMod = Boolean(typeof canModerate !== "undefined" && canModerate);
     const canAdminFlag = Boolean(typeof canAdmin !== "undefined" && canAdmin);
+    const creatorsList = typeof creators !== "undefined" && Array.isArray(creators) ? creators : [];
+    const categoriesList = typeof categories !== "undefined" && Array.isArray(categories) ? categories : [];
+    const tagsList = typeof popularTags !== "undefined" && Array.isArray(popularTags) ? popularTags : [];
+    const quickSearchSeed = {
+      blogs: creatorsList.slice(0, 20).map((creator) => ({
+        title: creator.username,
+        subtitle: `@${creator.username}`,
+        href: `/u/${encodeURIComponent(creator.username)}`,
+        avatar: creator.avatar_url || ""
+      })),
+      topics: [
+        ...categoriesList.slice(0, 20).map((category) => ({
+          title: category.name,
+          subtitle: "Category",
+          href: `/?category=${encodeURIComponent(category.slug)}`,
+          badge: String(category.name || "").slice(0, 1).toUpperCase()
+        })),
+        ...tagsList.slice(0, 20).map((tag) => ({
+          title: `#${tag.slug}`,
+          subtitle: "Tag",
+          href: `/?tag=${encodeURIComponent(tag.slug)}`,
+          badge: "#"
+        }))
+      ]
+    };
+    const quickSearchSeedJson = JSON.stringify(quickSearchSeed).replace(/</g, "\\u003c");
   %>
   <div class="topbar-inner">
     <a class="wordmark" href="/">VIKS</a>
@@ -13,11 +39,31 @@
     <a class="back-btn" href="/" aria-label="Back">&#x2039;</a>
     <% } %>
 
+    <div class="topbar-search-inline" id="topbar-search-inline" aria-hidden="true">
+      <form class="search-inline-form" method="get" action="/search" role="search">
+        <span class="search-inline-icon">&#x1F50D;</span>
+        <input
+          id="top-search-input"
+          class="search-inline-input"
+          type="search"
+          name="q"
+          value="<%= q %>"
+          placeholder="Search"
+          autocomplete="off"
+        />
+        <button id="top-search-clear" class="search-inline-clear" type="button" aria-label="Clear search" hidden>
+          &#x2715;
+        </button>
+      </form>
+      <section id="top-search-suggestions" class="search-suggestions" hidden></section>
+      <script id="top-search-seed" type="application/json"><%- quickSearchSeedJson %></script>
+    </div>
+
     <div class="topbar-spacer"></div>
 
-    <a class="icon-btn" href="/search?q=<%= encodeURIComponent(q) %>" aria-label="Search">
+    <button id="top-search-toggle" class="icon-btn search-toggle" type="button" aria-label="Search">
       <span>&#x1F50D;</span>
-    </a>
+    </button>
 
     <% if (user) { %>
     <details class="notify-wrap">
@@ -145,3 +191,165 @@
     <% } %>
   </div>
 </header>
+
+<script>
+  (() => {
+    const topbar = document.querySelector(".topbar");
+    if (!topbar) return;
+
+    const toggle = topbar.querySelector("#top-search-toggle");
+    const wrap = topbar.querySelector("#topbar-search-inline");
+    const input = topbar.querySelector("#top-search-input");
+    const panel = topbar.querySelector("#top-search-suggestions");
+    const clearButton = topbar.querySelector("#top-search-clear");
+    const seedNode = topbar.querySelector("#top-search-seed");
+    if (!toggle || !wrap || !input || !panel || !clearButton || !seedNode) return;
+
+    let seed = { blogs: [], topics: [] };
+    try {
+      seed = JSON.parse(seedNode.textContent || "{}");
+    } catch (error) {
+      seed = { blogs: [], topics: [] };
+    }
+
+    const escapeHtml = (value) =>
+      String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
+    const setOpen = (isOpen) => {
+      if (isOpen) {
+        topbar.classList.add("search-open");
+        toggle.classList.add("is-active");
+        document.body.classList.add("search-open");
+        wrap.setAttribute("aria-hidden", "false");
+      } else {
+        topbar.classList.remove("search-open");
+        toggle.classList.remove("is-active");
+        document.body.classList.remove("search-open");
+        wrap.setAttribute("aria-hidden", "true");
+        panel.hidden = true;
+      }
+    };
+
+    const renderSuggestions = () => {
+      const queryText = input.value.trim();
+      clearButton.hidden = !queryText;
+      if (!queryText) {
+        panel.hidden = true;
+        panel.innerHTML = "";
+        return;
+      }
+
+      const qLower = queryText.toLowerCase();
+      const blogs = (seed.blogs || []).filter((item) =>
+        String(item.title || "").toLowerCase().includes(qLower)
+      ).slice(0, 4);
+      const topics = (seed.topics || []).filter((item) =>
+        String(item.title || "").toLowerCase().includes(qLower)
+      ).slice(0, 4);
+
+      const blocks = [];
+      blocks.push(
+        `<a class="search-all-row" href="/search?q=${encodeURIComponent(queryText)}"><span class="search-all-arrow">&#x21A9;</span><span>Go to all results</span></a>`
+      );
+
+      if (blogs.length > 0) {
+        const blogItems = blogs
+          .map(
+            (item) =>
+              `<a class="search-item" href="${escapeHtml(item.href)}"><img src="${escapeHtml(
+                item.avatar ||
+                  "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80"
+              )}" alt="${escapeHtml(item.title)}" /><span><strong>${escapeHtml(
+                item.title
+              )}</strong><small>${escapeHtml(item.subtitle || "")}</small></span></a>`
+          )
+          .join("");
+        blocks.push(`<section class="search-section"><h4>Blogs</h4>${blogItems}</section>`);
+      }
+
+      if (topics.length > 0) {
+        const topicItems = topics
+          .map(
+            (item) =>
+              `<a class="search-item" href="${escapeHtml(item.href)}"><span class="search-topic-badge">${escapeHtml(
+                item.badge || "#"
+              )}</span><span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(
+                item.subtitle || ""
+              )}</small></span></a>`
+          )
+          .join("");
+        blocks.push(`<section class="search-section"><h4>Topics</h4>${topicItems}</section>`);
+      }
+
+      if (blogs.length === 0 && topics.length === 0) {
+        blocks.push(
+          `<section class="search-section"><p class="search-empty">No quick matches. Press Enter for full search.</p></section>`
+        );
+      }
+
+      panel.innerHTML = blocks.join("");
+      panel.hidden = false;
+    };
+
+    toggle.addEventListener("click", () => {
+      const next = !topbar.classList.contains("search-open");
+      setOpen(next);
+      if (next) {
+        input.focus();
+        input.select();
+        renderSuggestions();
+      }
+    });
+
+    input.addEventListener("input", renderSuggestions);
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    clearButton.addEventListener("click", () => {
+      if (input.value) {
+        input.value = "";
+        renderSuggestions();
+        input.focus();
+      } else {
+        setOpen(false);
+      }
+    });
+
+    document.addEventListener("mousedown", (event) => {
+      if (!topbar.classList.contains("search-open")) return;
+      if (topbar.contains(event.target)) return;
+      setOpen(false);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target;
+      if (
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
+      ) {
+        return;
+      }
+      event.preventDefault();
+      setOpen(true);
+      input.focus();
+      renderSuggestions();
+    });
+
+    if (input.value.trim()) {
+      setOpen(true);
+      renderSuggestions();
+    }
+  })();
+</script>
