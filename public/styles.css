@@ -1374,6 +1374,55 @@ textarea {
   font-size: 15px;
 }
 
+/* Borderless pass requested by user */
+.topbar {
+  border-bottom: none;
+}
+
+.rail-block,
+.rail-section {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+.back-btn,
+.icon-btn,
+.pill-btn,
+.user-chip,
+.notify-dropdown,
+.notify-dropdown header,
+.notify-item,
+.flash,
+.top-news-card,
+.top-blogs-card,
+.top-news-side-card,
+.panel,
+.post-card,
+.tag-chip,
+.follow-btn,
+.post-media,
+.video-wrap,
+.btn,
+input,
+select,
+textarea,
+.editor-title,
+.editor-footer,
+.profile-cover,
+.tab-row a,
+.compact-list a,
+.compact-list div,
+.compact-list article,
+.article-reaction-bar,
+.hidden-note,
+.comment-composer,
+.comment-composer textarea,
+.pagination a {
+  border: none !important;
+}
+
 @media (max-width: 1280px) {
   .app-shell {
     grid-template-columns: 248px minmax(0, 1fr) 300px;
