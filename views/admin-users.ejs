@@ -1,33 +1,42 @@
 <%- include("partials/head", { pageTitle }) %>
 
-<section class="panel">
-  <h1>User management</h1>
-  <p class="fine-print">Admin-only panel for role updates.</p>
-  <div class="compact-list">
-    <% for (const user of users) { %>
-    <article class="moderation-item">
-      <strong>@<%= user.username %> • <%= user.role %> • <%= user.status %></strong>
-      <span>Email verified: <%= user.email_verified ? 'yes' : 'no' %> • Posts: <%= user.post_count %></span>
-      <div class="post-actions">
-        <form method="post" action="/admin/users/<%= user.id %>/role" class="inline-form">
-          <select name="role">
-            <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>user</option>
-            <option value="moderator" <%= user.role === 'moderator' ? 'selected' : '' %>>moderator</option>
-            <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>admin</option>
-          </select>
-          <button class="btn btn-small" type="submit">Update role</button>
-        </form>
+<section class="app-shell">
+  <%- include("partials/left-rail", { filters: null, selectedTag: null }) %>
 
-        <form method="post" action="/moderation/users/<%= user.id %>/suspend">
-          <button class="btn btn-small btn-muted" type="submit">Suspend</button>
-        </form>
-        <form method="post" action="/moderation/users/<%= user.id %>/ban">
-          <button class="btn btn-small btn-danger" type="submit">Ban</button>
-        </form>
+  <section class="feed-main">
+    <section class="panel">
+      <h1>User management</h1>
+      <p class="fine-print">Admin-only panel for role and status updates.</p>
+
+      <div class="compact-list">
+        <% for (const user of users) { %>
+        <article class="moderation-item">
+          <strong>@<%= user.username %> <%= user.role %> <%= user.status %></strong>
+          <span>Email verified: <%= user.email_verified ? 'yes' : 'no' %> Posts: <%= user.post_count %></span>
+          <div class="post-actions">
+            <form method="post" action="/admin/users/<%= user.id %>/role" class="inline-form">
+              <select name="role">
+                <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>user</option>
+                <option value="moderator" <%= user.role === 'moderator' ? 'selected' : '' %>>moderator</option>
+                <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>admin</option>
+              </select>
+              <button class="btn btn-small" type="submit">Update role</button>
+            </form>
+
+            <form method="post" action="/moderation/users/<%= user.id %>/suspend">
+              <button class="btn btn-small btn-muted" type="submit">Suspend</button>
+            </form>
+            <form method="post" action="/moderation/users/<%= user.id %>/ban">
+              <button class="btn btn-small btn-danger" type="submit">Ban</button>
+            </form>
+          </div>
+        </article>
+        <% } %>
       </div>
-    </article>
-    <% } %>
-  </div>
+    </section>
+  </section>
+
+  <%- include("partials/right-rail") %>
 </section>
 
 <%- include("partials/footer") %>

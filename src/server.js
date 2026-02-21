@@ -292,6 +292,9 @@ app.use((req, res, next) => {
 
   res.locals.categories = db.getAllCategories();
   res.locals.popularTags = db.getPopularTags(24);
+  res.locals.creators = db.getTopCreators(5);
+  res.locals.trending = db.getTrendingPosts(6);
+  res.locals.notifications = req.currentUser ? db.getUserNotifications(req.currentUser.id, 20) : [];
   res.locals.query = typeof req.query.q === "string" ? req.query.q : "";
   res.locals.activePath = req.path;
   res.locals.flash = req.session.flash || null;
@@ -1049,6 +1052,13 @@ app.get("/admin/users", requireAuth, requireAdmin, (req, res) => {
   return res.render("admin-users", {
     pageTitle: "User management",
     users
+  });
+});
+
+app.get("/notifications", requireAuth, (req, res) => {
+  return res.render("notifications", {
+    pageTitle: "Notifications",
+    items: db.getUserNotifications(req.currentUser.id, 120)
   });
 });
 

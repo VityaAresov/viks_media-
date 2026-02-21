@@ -1,47 +1,103 @@
 <%- include("partials/head", { pageTitle }) %>
+<%
+  const totalLikes = posts.reduce((sum, post) => sum + post.like_count, 0);
+  const joinedYear = new Date(profileUser.created_at).getFullYear();
+%>
 
-<section class="account-layout single-column">
-  <section class="panel profile-card">
-    <div class="profile-header">
-      <img
-        src="<%= profileUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=160&q=80' %>"
-        alt="<%= profileUser.username %>"
-      />
-      <div>
-        <h1>@<%= profileUser.username %></h1>
-        <p>Joined <%= new Date(profileUser.created_at).toLocaleDateString() %></p>
+<section class="app-shell">
+  <%- include("partials/left-rail", { filters: null, selectedTag: null }) %>
+
+  <section class="feed-main profile-main">
+    <article class="panel profile-hero-card">
+      <div class="profile-cover"></div>
+      <div class="profile-hero-body">
+        <img
+          class="profile-avatar"
+          src="<%= profileUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=220&q=80' %>"
+          alt="<%= profileUser.username %>"
+        />
+
+        <div class="profile-hero-meta">
+          <h1><%= profileUser.username %></h1>
+          <p class="handle">@<%= profileUser.username %></p>
+          <p class="fine-print">Joined in <%= joinedYear %></p>
+          <p class="profile-bio"><%= profileUser.bio || 'Media creator profile.' %></p>
+
+          <div class="profile-inline-stats">
+            <span><strong><%= posts.length %></strong> posts</span>
+            <span><strong><%= totalLikes %></strong> reactions</span>
+            <span><strong><%= profileUser.role %></strong> role</span>
+          </div>
+        </div>
+
+        <div class="profile-hero-actions">
+          <% if (isOwner) { %>
+          <a class="btn" href="/account">Edit profile</a>
+          <a class="btn btn-muted" href="/account?tab=settings">Settings</a>
+          <% } else { %>
+          <button class="btn" type="button">Subscribe</button>
+          <button class="btn btn-muted" type="button">Message</button>
+          <form method="post" action="/reports" class="inline-form">
+            <input type="hidden" name="target_type" value="user" />
+            <input type="hidden" name="target_id" value="<%= profileUser.id %>" />
+            <input type="hidden" name="reason_code" value="abuse" />
+            <input type="hidden" name="reason_text" value="Reported user profile <%= profileUser.username %>" />
+            <button class="btn btn-muted" type="submit">Report</button>
+          </form>
+          <% } %>
+        </div>
       </div>
-    </div>
-    <p class="profile-bio"><%= profileUser.bio || 'No bio yet.' %></p>
-    <div class="profile-stats">
-      <div>
-        <strong><%= posts.length %></strong>
-        <span>Publications</span>
+
+      <div class="tab-row profile-tabs">
+        <a class="is-active" href="/u/<%= profileUser.username %>">Posts</a>
+        <a href="/u/<%= profileUser.username %>">Comments</a>
       </div>
-      <div>
-        <strong><%= profileUser.role %></strong>
-        <span>Role</span>
-      </div>
+    </article>
+
+    <div class="feed-sort-row">Fresh &#x2304;</div>
+
+    <div class="post-stream">
+      <% if (posts.length === 0) { %>
+      <article class="post-card">
+        <h3>No publications yet</h3>
+        <p class="fine-print">This profile has not published anything.</p>
+      </article>
+      <% } %>
+
+      <% for (const post of posts) { %>
+      <article class="post-card">
+        <header class="author-row">
+          <a class="author-meta" href="/u/<%= profileUser.username %>">
+            <img
+              src="<%= profileUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+              alt="<%= profileUser.username %>"
+            />
+            <div>
+              <strong><%= profileUser.username %></strong>
+              <span><a href="/categories/<%= post.category_slug %>"><%= post.category_name %></a> <%= post.created_relative %></span>
+            </div>
+          </a>
+          <span class="dot-menu">...</span>
+        </header>
+
+        <a class="post-title" href="/posts/<%= post.id %>"><%= post.title %></a>
+        <p class="post-excerpt"><%= post.excerpt %></p>
+
+        <% if (post.media_type === "image" && post.media_url) { %>
+        <img class="post-media" src="<%= post.media_url %>" alt="<%= post.title %>" />
+        <% } %>
+
+        <footer class="post-actions compact-row">
+          <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>">&#x2661; <%= post.like_count %></a>
+          <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>#comments">&#x1F5E8; <%= post.comment_count %></a>
+          <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>">Open</a>
+        </footer>
+      </article>
+      <% } %>
     </div>
   </section>
-</section>
 
-<section class="panel">
-  <h2>Publications by @<%= profileUser.username %></h2>
-  <% if (posts.length === 0) { %>
-  <p class="fine-print">No publications yet.</p>
-  <% } %>
-  <div class="compact-list">
-    <% for (const post of posts) { %>
-    <a href="/posts/<%= post.id %>">
-      <strong><%= post.title %></strong>
-      <span>
-        <%= post.category_name %> • <%= post.reading_time_minutes %> min •
-        <%= post.like_count %> likes • <%= post.comment_count %> comments
-      </span>
-    </a>
-    <% } %>
-  </div>
+  <%- include("partials/right-rail") %>
 </section>
 
 <%- include("partials/footer") %>

@@ -1,129 +1,217 @@
 <%- include("partials/head", { pageTitle }) %>
+<%
+  const totalLikes = posts.reduce((sum, post) => sum + post.like_count, 0);
+  const joinedYear = new Date(profileUser.created_at).getFullYear();
+  const activeTab = tab === 'bookmarks' || tab === 'moderation' || tab === 'settings' ? tab : 'posts';
+%>
 
-<section class="account-layout">
-  <section class="panel profile-card">
-    <div class="profile-header">
-      <img
-        src="<%= profileUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=160&q=80' %>"
-        alt="<%= profileUser.username %>"
-      />
-      <div>
-        <h1>@<%= profileUser.username %></h1>
-        <p>Joined <%= new Date(profileUser.created_at).toLocaleDateString() %></p>
+<section class="app-shell">
+  <%- include("partials/left-rail", { filters: null, selectedTag: null }) %>
+
+  <section class="feed-main profile-main">
+    <article class="panel profile-hero-card owner-card">
+      <div class="profile-cover owner-cover">
+        <button class="btn btn-small btn-muted" type="button">Add cover</button>
       </div>
-    </div>
-    <p class="profile-bio"><%= profileUser.bio || 'No bio yet.' %></p>
-    <div class="profile-stats">
-      <div>
-        <strong><%= posts.length %></strong>
-        <span>Publications</span>
+      <div class="profile-hero-body">
+        <img
+          class="profile-avatar"
+          src="<%= profileUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=220&q=80' %>"
+          alt="<%= profileUser.username %>"
+        />
+
+        <div class="profile-hero-meta">
+          <h1><%= profileUser.username %></h1>
+          <p class="fine-print">+<%= totalLikes %> since <%= joinedYear %></p>
+          <p class="profile-bio"><%= profileUser.bio || 'Add a short bio in settings.' %></p>
+
+          <div class="profile-inline-stats">
+            <span><strong><%= posts.length %></strong> posts</span>
+            <span><strong><%= bookmarks.total %></strong> bookmarks</span>
+            <span><strong><%= profileUser.email_verified ? 'verified' : 'not verified' %></strong> email</span>
+          </div>
+        </div>
+
+        <div class="profile-hero-actions">
+          <a class="btn btn-muted" href="/account?tab=posts">Analytics</a>
+          <a class="btn btn-muted" href="/account?tab=settings">Settings</a>
+        </div>
       </div>
-      <div>
-        <strong><%= bookmarks.total %></strong>
-        <span>Bookmarks</span>
+
+      <div class="tab-row profile-tabs">
+        <a class="<%= activeTab === 'posts' ? 'is-active' : '' %>" href="/account?tab=posts">Posts</a>
+        <a class="<%= activeTab === 'bookmarks' ? 'is-active' : '' %>" href="/account?tab=bookmarks">Bookmarks</a>
+        <% if (canModerate) { %>
+        <a class="<%= activeTab === 'moderation' ? 'is-active' : '' %>" href="/account?tab=moderation">Moderation</a>
+        <% } %>
+        <a class="<%= activeTab === 'settings' ? 'is-active' : '' %>" href="/account?tab=settings">Settings</a>
       </div>
-      <div>
-        <strong><%= profileUser.role %></strong>
-        <span>Role</span>
+    </article>
+
+    <% if (activeTab === 'settings') { %>
+    <section class="panel settings-hub">
+      <h2>Settings</h2>
+      <div class="settings-list">
+        <a class="settings-row" href="#profile-settings">
+          <strong>Blog</strong>
+          <span>Name, description, avatar and bio.</span>
+        </a>
+        <a class="settings-row" href="#feed-settings">
+          <strong>Feeds</strong>
+          <span>Feed filtering and blocked content controls.</span>
+        </a>
+        <a class="settings-row" href="#account-settings">
+          <strong>Basic</strong>
+          <span>Sign in methods and account controls.</span>
+        </a>
+        <a class="settings-row" href="#notification-settings">
+          <strong>Notifications</strong>
+          <span>In-app activity and email visibility.</span>
+        </a>
       </div>
-      <div>
-        <strong><%= profileUser.email_verified ? 'Yes' : 'No' %></strong>
-        <span>Email verified</span>
+    </section>
+
+    <section id="profile-settings" class="panel form-card">
+      <h3>Profile settings</h3>
+      <form method="post" action="/account" class="stack-form">
+        <label>
+          Avatar URL
+          <input type="url" name="avatar_url" value="<%= profileUser.avatar_url %>" placeholder="https://..." />
+        </label>
+        <label>
+          Bio
+          <textarea name="bio" maxlength="280" placeholder="Tell people what you create"><%= profileUser.bio %></textarea>
+        </label>
+        <button class="btn" type="submit">Save profile</button>
+      </form>
+    </section>
+
+    <section id="feed-settings" class="panel form-card">
+      <h3>Feed settings</h3>
+      <p class="fine-print">Use category and tag filters from the left panel to customize your feed instantly.</p>
+      <a class="btn btn-muted" href="/">Open feed filters</a>
+    </section>
+
+    <section id="account-settings" class="panel form-card">
+      <h3>Basic account</h3>
+      <p class="fine-print">Password reset is available from the auth pages.</p>
+      <a class="btn btn-muted" href="/forgot-password">Reset password</a>
+      <form method="post" action="/logout">
+        <button class="btn btn-danger" type="submit">Log out</button>
+      </form>
+    </section>
+
+    <section id="notification-settings" class="panel form-card">
+      <h3>Notifications</h3>
+      <p class="fine-print">Bell dropdown in the header shows likes, comments, and bookmarks on your posts.</p>
+      <a class="btn btn-muted" href="/notifications">Open notifications</a>
+    </section>
+
+    <% } else if (activeTab === 'bookmarks') { %>
+    <section class="panel">
+      <h2>My bookmarks</h2>
+      <% if (bookmarks.items.length === 0) { %>
+      <p class="fine-print">No bookmarks yet.</p>
+      <% } %>
+      <div class="compact-list">
+        <% for (const post of bookmarks.items) { %>
+        <a href="/posts/<%= post.id %>">
+          <strong><%= post.title %></strong>
+          <span><%= post.category_name %> <%= post.reading_time_minutes %> min <%= post.like_count %> likes</span>
+        </a>
+        <% } %>
       </div>
-    </div>
+      <% if (bookmarks.pages > 1) { %>
+      <nav class="pagination">
+        <% if (bookmarks.page > 1) { %>
+        <a href="/account?tab=bookmarks&bookmark_page=<%= bookmarks.page - 1 %>">Previous</a>
+        <% } %>
+        <span>Page <%= bookmarks.page %> of <%= bookmarks.pages %></span>
+        <% if (bookmarks.page < bookmarks.pages) { %>
+        <a href="/account?tab=bookmarks&bookmark_page=<%= bookmarks.page + 1 %>">Next</a>
+        <% } %>
+      </nav>
+      <% } %>
+    </section>
+
+    <% } else if (activeTab === 'moderation' && canModerate && moderation) { %>
+    <section class="panel">
+      <h2>Moderation queue</h2>
+      <div class="tab-row">
+        <a class="<%= moderationStatus === 'open' ? 'is-active' : '' %>" href="/account?tab=moderation&status=open">Open</a>
+        <a class="<%= moderationStatus === 'in_review' ? 'is-active' : '' %>" href="/account?tab=moderation&status=in_review">In review</a>
+        <a class="<%= moderationStatus === 'resolved' ? 'is-active' : '' %>" href="/account?tab=moderation&status=resolved">Resolved</a>
+      </div>
+
+      <div class="compact-list">
+        <% for (const report of moderation.items) { %>
+        <div>
+          <strong>#<%= report.id %> <%= report.target_type %> <%= report.target_id %> <%= report.status %></strong>
+          <span>Reporter: @<%= report.reporter_username %> Assigned: <%= report.assignee_username || 'nobody' %></span>
+        </div>
+        <% } %>
+      </div>
+
+      <% if (moderation.pages > 1) { %>
+      <nav class="pagination">
+        <% if (moderation.page > 1) { %>
+        <a href="/account?tab=moderation&status=<%= moderationStatus %>&mod_page=<%= moderation.page - 1 %>">Previous</a>
+        <% } %>
+        <span>Page <%= moderation.page %> of <%= moderation.pages %></span>
+        <% if (moderation.page < moderation.pages) { %>
+        <a href="/account?tab=moderation&status=<%= moderationStatus %>&mod_page=<%= moderation.page + 1 %>">Next</a>
+        <% } %>
+      </nav>
+      <% } %>
+    </section>
+
+    <% } else { %>
+    <section class="panel">
+      <div class="feed-sort-row">Fresh &#x2304;</div>
+      <div class="post-stream">
+        <% if (posts.length === 0) { %>
+        <article class="post-card">
+          <h3>No publications yet</h3>
+          <p class="fine-print">Use the Write button in header to publish your first post.</p>
+        </article>
+        <% } %>
+
+        <% for (const post of posts) { %>
+        <article class="post-card">
+          <header class="author-row">
+            <a class="author-meta" href="/u/<%= profileUser.username %>">
+              <img
+                src="<%= profileUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+                alt="<%= profileUser.username %>"
+              />
+              <div>
+                <strong><%= profileUser.username %></strong>
+                <span><a href="/categories/<%= post.category_slug %>"><%= post.category_name %></a> <%= post.created_relative %></span>
+              </div>
+            </a>
+            <span class="dot-menu">...</span>
+          </header>
+
+          <a class="post-title" href="/posts/<%= post.id %>"><%= post.title %></a>
+          <p class="post-excerpt"><%= post.excerpt %></p>
+
+          <% if (post.media_type === "image" && post.media_url) { %>
+          <img class="post-media" src="<%= post.media_url %>" alt="<%= post.title %>" />
+          <% } %>
+
+          <footer class="post-actions compact-row">
+            <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>">&#x2661; <%= post.like_count %></a>
+            <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>#comments">&#x1F5E8; <%= post.comment_count %></a>
+            <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>">Open</a>
+          </footer>
+        </article>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
   </section>
 
-  <section class="panel form-card">
-    <h2>Edit account</h2>
-    <form method="post" action="/account" class="stack-form">
-      <label>
-        Avatar URL
-        <input type="url" name="avatar_url" value="<%= profileUser.avatar_url %>" placeholder="https://..." />
-      </label>
-      <label>
-        Bio
-        <textarea name="bio" maxlength="280" placeholder="Tell people what you create"><%= profileUser.bio %></textarea>
-      </label>
-      <button class="btn" type="submit">Save profile</button>
-    </form>
-  </section>
-</section>
-
-<section class="panel">
-  <div class="tab-row">
-    <a class="<%= tab === 'posts' ? 'is-active' : '' %>" href="/account?tab=posts">Posts</a>
-    <a class="<%= tab === 'bookmarks' ? 'is-active' : '' %>" href="/account?tab=bookmarks">Bookmarks</a>
-    <% if (canModerate) { %>
-    <a class="<%= tab === 'moderation' ? 'is-active' : '' %>" href="/account?tab=moderation">Moderation</a>
-    <% } %>
-  </div>
-
-  <% if (tab === 'bookmarks') { %>
-  <h2>My bookmarks</h2>
-  <% if (bookmarks.items.length === 0) { %>
-  <p class="fine-print">No bookmarks yet.</p>
-  <% } %>
-  <div class="compact-list">
-    <% for (const post of bookmarks.items) { %>
-    <a href="/posts/<%= post.id %>">
-      <strong><%= post.title %></strong>
-      <span>
-        <%= post.category_name %> • <%= post.reading_time_minutes %> min •
-        <%= post.like_count %> likes • <%= post.comment_count %> comments
-      </span>
-    </a>
-    <% } %>
-  </div>
-  <% if (bookmarks.pages > 1) { %>
-  <nav class="pagination">
-    <% if (bookmarks.page > 1) { %>
-    <a href="/account?tab=bookmarks&bookmark_page=<%= bookmarks.page - 1 %>">Previous</a>
-    <% } %>
-    <span>Page <%= bookmarks.page %> of <%= bookmarks.pages %></span>
-    <% if (bookmarks.page < bookmarks.pages) { %>
-    <a href="/account?tab=bookmarks&bookmark_page=<%= bookmarks.page + 1 %>">Next</a>
-    <% } %>
-  </nav>
-  <% } %>
-  <% } else if (tab === 'moderation' && canModerate) { %>
-  <h2>Moderation queue</h2>
-  <p class="fine-print">Open dedicated queue: <a href="/moderation/queue">/moderation/queue</a></p>
-  <div class="compact-list">
-    <% for (const report of moderation.items) { %>
-    <div>
-      <strong>#<%= report.id %> • <%= report.target_type %> <%= report.target_id %> • <%= report.status %></strong>
-      <span>Reporter: @<%= report.reporter_username %> • Assigned: <%= report.assignee_username || 'nobody' %></span>
-    </div>
-    <% } %>
-  </div>
-  <% if (moderation.pages > 1) { %>
-  <nav class="pagination">
-    <% if (moderation.page > 1) { %>
-    <a href="/account?tab=moderation&status=<%= moderationStatus %>&mod_page=<%= moderation.page - 1 %>">Previous</a>
-    <% } %>
-    <span>Page <%= moderation.page %> of <%= moderation.pages %></span>
-    <% if (moderation.page < moderation.pages) { %>
-    <a href="/account?tab=moderation&status=<%= moderationStatus %>&mod_page=<%= moderation.page + 1 %>">Next</a>
-    <% } %>
-  </nav>
-  <% } %>
-  <% } else { %>
-  <h2>My publications</h2>
-  <% if (posts.length === 0) { %>
-  <p class="fine-print">No publications yet.</p>
-  <% } %>
-  <div class="compact-list">
-    <% for (const post of posts) { %>
-    <a href="/posts/<%= post.id %>">
-      <strong><%= post.title %></strong>
-      <span>
-        <%= post.category_name %> • <%= post.reading_time_minutes %> min •
-        <%= post.like_count %> likes • <%= post.comment_count %> comments
-      </span>
-    </a>
-    <% } %>
-  </div>
-  <% } %>
+  <%- include("partials/right-rail") %>
 </section>
 
 <%- include("partials/footer") %>

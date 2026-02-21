@@ -1,40 +1,51 @@
 <%- include("partials/head", { pageTitle }) %>
 
-<section class="panel">
-  <h1>Bookmarks</h1>
-  <p class="fine-print">Saved publications for later reading.</p>
+<section class="app-shell">
+  <%- include("partials/left-rail", { filters: null, selectedTag: null }) %>
 
-  <% if (posts.length === 0) { %>
-  <p class="fine-print">No bookmarks yet.</p>
-  <% } %>
+  <section class="feed-main">
+    <section class="panel">
+      <h1>Bookmarks</h1>
+      <p class="fine-print">Saved publications for later reading.</p>
 
-  <div class="post-stream">
-    <% for (const post of posts) { %>
-    <article class="post-card">
-      <a class="post-title" href="/posts/<%= post.id %>"><%= post.title %></a>
-      <p class="post-excerpt"><%= post.excerpt %></p>
-      <div class="post-meta-line">
-        <span><%= post.category_name %></span>
-        <span><%= post.reading_time_minutes %> min read</span>
+      <% if (posts.length === 0) { %>
+      <p class="fine-print">No bookmarks yet.</p>
+      <% } %>
+
+      <div class="post-stream">
+        <% for (const post of posts) { %>
+        <article class="post-card">
+          <a class="post-title" href="/posts/<%= post.id %>"><%= post.title %></a>
+          <p class="post-excerpt"><%= post.excerpt %></p>
+          <div class="post-meta-line">
+            <span><%= post.category_name %></span>
+            <span><%= post.reading_time_minutes %> min read</span>
+          </div>
+          <footer class="post-actions compact-row">
+            <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>">Open</a>
+            <form method="post" action="/posts/<%= post.id %>/bookmark">
+              <button class="btn btn-small btn-bookmark-active" type="submit">Remove</button>
+            </form>
+          </footer>
+        </article>
+        <% } %>
       </div>
-      <footer class="post-actions">
-        <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>">Open</a>
-      </footer>
-    </article>
-    <% } %>
-  </div>
 
-  <% if (pagination.pages > 1) { %>
-  <nav class="pagination">
-    <% if (pagination.page > 1) { %>
-    <a href="/bookmarks?page=<%= pagination.page - 1 %>">Previous</a>
-    <% } %>
-    <span>Page <%= pagination.page %> of <%= pagination.pages %></span>
-    <% if (pagination.page < pagination.pages) { %>
-    <a href="/bookmarks?page=<%= pagination.page + 1 %>">Next</a>
-    <% } %>
-  </nav>
-  <% } %>
+      <% if (pagination.pages > 1) { %>
+      <nav class="pagination">
+        <% if (pagination.page > 1) { %>
+        <a href="/bookmarks?page=<%= pagination.page - 1 %>">Previous</a>
+        <% } %>
+        <span>Page <%= pagination.page %> of <%= pagination.pages %></span>
+        <% if (pagination.page < pagination.pages) { %>
+        <a href="/bookmarks?page=<%= pagination.page + 1 %>">Next</a>
+        <% } %>
+      </nav>
+      <% } %>
+    </section>
+  </section>
+
+  <%- include("partials/right-rail") %>
 </section>
 
 <%- include("partials/footer") %>

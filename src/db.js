@@ -1273,6 +1273,77 @@ function getBookmarkCountForUser(userId) {
   return state.bookmarks.filter((bookmark) => bookmark.user_id === toInt(userId)).length;
 }
 
+function getUserNotifications(userId, limit = 20) {
+  const viewerId = toInt(userId);
+  if (viewerId <= 0) return [];
+
+  const ownPostIds = new Set(
+    state.posts.filter((post) => post.user_id === viewerId).map((post) => post.id)
+  );
+  if (ownPostIds.size === 0) return [];
+
+  const items = [];
+
+  for (const like of state.likes) {
+    if (!ownPostIds.has(like.post_id) || like.user_id === viewerId) continue;
+    const actor = getUserById(like.user_id);
+    const post = getPostRawById(like.post_id);
+    if (!actor || !post) continue;
+    items.push({
+      id: `like-${like.id}`,
+      type: "like",
+      actor_username: actor.username,
+      actor_avatar_url: actor.avatar_url || "",
+      post_id: post.id,
+      message: "liked your publication",
+      context: post.title,
+      created_at: like.created_at || nowIso()
+    });
+  }
+
+  for (const comment of state.comments) {
+    if (!ownPostIds.has(comment.post_id) || comment.user_id === viewerId) continue;
+    const actor = getUserById(comment.user_id);
+    const post = getPostRawById(comment.post_id);
+    if (!actor || !post) continue;
+    items.push({
+      id: `comment-${comment.id}`,
+      type: "comment",
+      actor_username: actor.username,
+      actor_avatar_url: actor.avatar_url || "",
+      post_id: post.id,
+      message: "commented on your publication",
+      context: summarize(comment.body, 80),
+      created_at: comment.created_at || nowIso()
+    });
+  }
+
+  for (const bookmark of state.bookmarks) {
+    if (!ownPostIds.has(bookmark.post_id) || bookmark.user_id === viewerId) continue;
+    const actor = getUserById(bookmark.user_id);
+    const post = getPostRawById(bookmark.post_id);
+    if (!actor || !post) continue;
+    items.push({
+      id: `bookmark-${bookmark.id}`,
+      type: "bookmark",
+      actor_username: actor.username,
+      actor_avatar_url: actor.avatar_url || "",
+      post_id: post.id,
+      message: "bookmarked your publication",
+      context: post.title,
+      created_at: bookmark.created_at || nowIso()
+    });
+  }
+
+  return items
+    .sort((a, b) => {
+      const diff = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (diff !== 0) return diff;
+      return String(b.id).localeCompare(String(a.id));
+    })
+    .slice(0, Math.max(1, toInt(limit) || 20));
+}
+
 module.exports = {
   SCHEMA_VERSION,
   REACTIONS,
@@ -1333,5 +1404,6 @@ module.exports = {
   resolveReport,
   getModerationActionsForTarget,
   getAdminUserList,
-  getBookmarkCountForUser
+  getBookmarkCountForUser,
+  getUserNotifications
 };

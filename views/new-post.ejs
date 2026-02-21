@@ -1,71 +1,92 @@
 <%- include("partials/head", { pageTitle }) %>
 
-<section class="center-wrap wide-wrap">
-  <div class="panel form-card">
-    <h1>New publication</h1>
-    <p>Write in markdown, add tags, and attach media URL.</p>
+<section class="app-shell">
+  <%- include("partials/left-rail", { filters: null, selectedTag: null }) %>
 
-    <form method="post" action="/posts" class="stack-form" id="new-post-form">
-      <label>
-        Category
-        <select name="category_id" required>
-          <% for (const category of categories) { %>
-          <option value="<%= category.id %>"><%= category.name %> - <%= category.description %></option>
-          <% } %>
-        </select>
-      </label>
+  <section class="feed-main">
+    <article class="editor-stage panel">
+      <form method="post" action="/posts" class="editor-form" id="new-post-form">
+        <header class="editor-head">
+          <div class="editor-author">
+            <img
+              src="<%= currentUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+              alt="<%= currentUser.username %>"
+            />
+            <div>
+              <strong><%= currentUser.username %></strong>
+              <small>Draft mode</small>
+            </div>
+          </div>
+          <div class="editor-head-fields">
+            <label>
+              Topic
+              <select name="category_id" required>
+                <% for (const category of categories) { %>
+                <option value="<%= category.id %>"><%= category.name %></option>
+                <% } %>
+              </select>
+            </label>
+          </div>
+        </header>
 
-      <label>
-        Title
-        <input type="text" name="title" required minlength="6" maxlength="160" placeholder="How I shot this rooftop sequence in one take" />
-      </label>
+        <input
+          class="editor-title"
+          type="text"
+          name="title"
+          required
+          minlength="6"
+          maxlength="160"
+          placeholder="Publication title"
+        />
 
-      <label>
-        Tags (comma-separated, max 5)
-        <input type="text" name="tags" maxlength="120" placeholder="videography, color-grading, tutorial" />
-      </label>
-
-      <label>
-        Publication markdown
         <textarea
+          class="editor-body"
           name="markdown_body"
           id="markdown_body"
           required
           minlength="20"
           maxlength="20000"
-          placeholder="## Setup&#10;Share your process, settings, workflow, and final results."
+          placeholder="Write your publication in markdown..."
         ></textarea>
-      </label>
 
-      <div class="row-fields">
-        <label>
-          Media type
-          <select name="media_type">
-            <option value="none">No media</option>
-            <option value="image">Image</option>
-            <option value="video">Video</option>
-          </select>
-        </label>
+        <div class="editor-side-fields">
+          <label>
+            Tags
+            <input type="text" name="tags" maxlength="120" placeholder="video, camera, workflow" />
+          </label>
 
-        <label>
-          Media URL
-          <input type="url" name="media_url" placeholder="https://..." />
-        </label>
+          <label>
+            Media type
+            <select name="media_type">
+              <option value="none">No media</option>
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+            </select>
+          </label>
+
+          <label>
+            Media URL
+            <input type="url" name="media_url" placeholder="https://..." />
+          </label>
+        </div>
+
+        <footer class="editor-footer">
+          <button class="btn btn-primary-large" type="submit">Publish</button>
+          <button class="btn btn-muted" type="button" id="preview-btn">Preview</button>
+          <span class="editor-save-state">Saved</span>
+        </footer>
+      </form>
+    </article>
+
+    <section class="panel markdown-preview-card editor-preview-card">
+      <h2>Preview</h2>
+      <div id="markdown-preview" class="markdown-rendered">
+        <p class="fine-print">Click Preview to render markdown.</p>
       </div>
-
-      <div class="editor-actions">
-        <button class="btn btn-muted" type="button" id="preview-btn">Preview markdown</button>
-        <button class="btn" type="submit">Publish</button>
-      </div>
-    </form>
-  </div>
-
-  <section class="panel markdown-preview-card">
-    <h2>Preview</h2>
-    <div id="markdown-preview" class="markdown-rendered">
-      <p class="fine-print">Click "Preview markdown" to render your post.</p>
-    </div>
+    </section>
   </section>
+
+  <%- include("partials/right-rail") %>
 </section>
 
 <script>
@@ -94,7 +115,7 @@
         preview.innerHTML = "<p class='fine-print'>Preview failed.</p>";
       } finally {
         previewButton.disabled = false;
-        previewButton.textContent = "Preview markdown";
+        previewButton.textContent = "Preview";
       }
     });
   })();

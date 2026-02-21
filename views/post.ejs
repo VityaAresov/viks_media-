@@ -1,190 +1,215 @@
 <%- include("partials/head", { pageTitle }) %>
 
-<section class="post-single">
-  <article class="panel post-full <%= post.is_hidden ? 'post-hidden' : '' %>">
-    <header class="post-meta">
-      <a class="meta-user" href="/u/<%= post.author_username %>">
-        <img
-          src="<%= post.author_avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
-          alt="<%= post.author_username %>"
-        />
-        <div>
-          <strong><%= post.author_username %></strong>
-          <span><%= post.created_relative %></span>
+<section class="app-shell">
+  <%- include("partials/left-rail", { filters: null, selectedTag: null }) %>
+
+  <section class="feed-main post-page-main">
+    <article class="panel article-card <%= post.is_hidden ? 'post-hidden' : '' %>">
+      <% if (post.is_hidden) { %>
+      <p class="hidden-note">This publication is hidden by moderation. Reason: <%= post.hidden_reason || 'not specified' %>.</p>
+      <% } %>
+
+      <header class="article-head">
+        <a class="meta-user" href="/u/<%= post.author_username %>">
+          <img
+            src="<%= post.author_avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+            alt="<%= post.author_username %>"
+          />
+          <span>
+            <strong><%= post.author_username %></strong>
+            <small><a href="/categories/<%= post.category_slug %>"><%= post.category_name %></a> <%= post.created_relative %></small>
+          </span>
+        </a>
+
+        <div class="article-head-actions">
+          <a class="btn btn-small btn-muted" href="/">Back</a>
+          <a class="btn btn-small btn-muted" href="/u/<%= post.author_username %>">Profile</a>
         </div>
-      </a>
-      <a class="category-pill" href="/categories/<%= post.category_slug %>"><%= post.category_name %></a>
-    </header>
+      </header>
 
-    <% if (post.is_hidden) { %>
-    <p class="hidden-note">This publication is hidden by moderation. Reason: <%= post.hidden_reason || 'not specified' %>.</p>
-    <% } %>
+      <h1><%= post.title %></h1>
+      <p class="article-lead"><%= post.excerpt %></p>
 
-    <h1><%= post.title %></h1>
-    <div class="post-meta-line">
-      <span><%= post.reading_time_minutes %> min read</span>
-      <% if (post.tags.length) { %>
-      <span>
-        <% for (const tag of post.tags) { %>
-        <a href="/tags/<%= tag.slug %>">#<%= tag.slug %></a>
+      <% if (post.media_type === "image" && post.media_url) { %>
+      <img class="post-media" src="<%= post.media_url %>" alt="<%= post.title %>" />
+      <% } %>
+      <% if (post.media_type === "video" && post.media_url) { %>
+      <% if (post.youtube_embed_url) { %>
+      <div class="video-wrap">
+        <iframe
+          src="<%= post.youtube_embed_url %>"
+          title="<%= post.title %>"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <% } else { %>
+      <video class="post-media" controls src="<%= post.media_url %>"></video>
+      <% } %>
+      <% } %>
+
+      <div class="post-meta-line">
+        <span><%= post.reading_time_minutes %> min read</span>
+        <% if (post.tags.length) { %>
+        <span>
+          <% for (const tag of post.tags) { %>
+          <a href="/tags/<%= tag.slug %>">#<%= tag.slug %></a>
+          <% } %>
+        </span>
         <% } %>
-      </span>
-      <% } %>
-    </div>
+      </div>
 
-    <div class="markdown-rendered"><%- post.rendered_html %></div>
+      <div class="markdown-rendered article-body"><%- post.rendered_html %></div>
 
-    <% if (post.media_type === "image" && post.media_url) { %>
-    <img class="post-media" src="<%= post.media_url %>" alt="<%= post.title %>" />
-    <% } %>
-    <% if (post.media_type === "video" && post.media_url) { %>
-    <% if (post.youtube_embed_url) { %>
-    <div class="video-wrap">
-      <iframe
-        src="<%= post.youtube_embed_url %>"
-        title="<%= post.title %>"
-        loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-      ></iframe>
-    </div>
-    <% } else { %>
-    <video class="post-media" controls src="<%= post.media_url %>"></video>
-    <% } %>
-    <% } %>
-
-    <footer class="post-actions">
-      <% if (currentUser && currentUser.email_verified) { %>
-      <form method="post" action="/posts/<%= post.id %>/like">
-        <button class="btn btn-small <%= post.liked_by_me ? 'btn-like-active' : 'btn-muted' %>" type="submit">
-          <%= post.liked_by_me ? 'Liked' : 'Like' %> (<%= post.like_count %>)
-        </button>
-      </form>
-      <form method="post" action="/posts/<%= post.id %>/bookmark">
-        <button class="btn btn-small <%= post.bookmarked_by_me ? 'btn-bookmark-active' : 'btn-muted' %>" type="submit">
-          <%= post.bookmarked_by_me ? 'Bookmarked' : 'Bookmark' %> (<%= post.bookmark_count %>)
-        </button>
-      </form>
-      <% } else { %>
-      <a class="btn btn-small btn-muted" href="/login">Like (<%= post.like_count %>)</a>
-      <% } %>
-      <a class="btn btn-small btn-muted" href="#comments">Comments (<%= post.comment_count %>)</a>
-      <a class="btn btn-small btn-muted" href="/">Back to feed</a>
-      <% if (currentUser && currentUser.email_verified) { %>
-      <form method="post" action="/reports" class="inline-form">
-        <input type="hidden" name="target_type" value="post" />
-        <input type="hidden" name="target_id" value="<%= post.id %>" />
-        <input type="hidden" name="reason_code" value="abuse" />
-        <input type="hidden" name="reason_text" value="Reported from post page" />
-        <button class="btn btn-small btn-muted" type="submit">Report</button>
-      </form>
-      <% } %>
-      <% if (canModerate) { %>
-      <% if (!post.is_hidden) { %>
-      <form method="post" action="/moderation/posts/<%= post.id %>/hide" class="inline-form">
-        <input type="text" name="reason" placeholder="Hide reason" />
-        <button class="btn btn-small btn-danger" type="submit">Hide post</button>
-      </form>
-      <% } else { %>
-      <form method="post" action="/moderation/posts/<%= post.id %>/unhide">
-        <button class="btn btn-small btn-muted" type="submit">Unhide post</button>
-      </form>
-      <% } %>
-      <% } %>
-    </footer>
-  </article>
-
-  <section id="comments" class="panel comments-card">
-    <h2>Comments</h2>
-    <% if (currentUser && currentUser.email_verified) { %>
-    <form method="post" action="/posts/<%= post.id %>/comments" class="stack-form">
-      <label>
-        Add comment
-        <textarea name="body" required minlength="2" maxlength="1500" placeholder="Write your thoughts"></textarea>
-      </label>
-      <button class="btn" type="submit">Post comment</button>
-    </form>
-    <% } else if (currentUser) { %>
-    <p class="fine-print">Verify your email to comment.</p>
-    <% } else { %>
-    <p class="fine-print">You need to <a href="/login">log in</a> to comment.</p>
-    <% } %>
-
-    <div class="comment-list">
-      <% if (comments.length === 0) { %>
-      <p class="fine-print">No comments yet.</p>
-      <% } %>
-      <% for (const comment of comments) { %>
-      <article id="comment-<%= comment.id %>" class="comment-item" style="margin-left:<%= comment.indent_level * 18 %>px;">
-        <% if (comment.deep_collapsed) { %>
-        <details>
-          <summary>Deep thread by @<%= comment.author_username %></summary>
-          <p><%= comment.body %></p>
-        </details>
+      <footer class="article-reaction-bar">
+        <% if (currentUser && currentUser.email_verified) { %>
+        <form method="post" action="/posts/<%= post.id %>/like">
+          <button class="btn btn-small <%= post.liked_by_me ? 'btn-like-active' : 'btn-muted' %>" type="submit">
+            &#x2661; <%= post.like_count %>
+          </button>
+        </form>
+        <a class="btn btn-small btn-muted" href="#comments">&#x1F5E8; <%= post.comment_count %></a>
+        <form method="post" action="/posts/<%= post.id %>/bookmark">
+          <button class="btn btn-small <%= post.bookmarked_by_me ? 'btn-bookmark-active' : 'btn-muted' %>" type="submit">
+            &#x1F516; <%= post.bookmark_count %>
+          </button>
+        </form>
+        <form method="post" action="/reports" class="inline-form">
+          <input type="hidden" name="target_type" value="post" />
+          <input type="hidden" name="target_id" value="<%= post.id %>" />
+          <input type="hidden" name="reason_code" value="abuse" />
+          <input type="hidden" name="reason_text" value="Reported from post page" />
+          <button class="btn btn-small btn-muted" type="submit">Report</button>
+        </form>
         <% } else { %>
-        <header>
-          <a href="/u/<%= comment.author_username %>">@<%= comment.author_username %></a>
-          <span><%= comment.created_relative %></span>
-        </header>
-        <p><%= comment.body %></p>
+        <a class="btn btn-small btn-muted" href="/login">&#x2661; <%= post.like_count %></a>
+        <a class="btn btn-small btn-muted" href="#comments">&#x1F5E8; <%= post.comment_count %></a>
         <% } %>
+      </footer>
 
-        <div class="comment-actions">
+      <% if (canModerate) { %>
+      <details class="moderation-tools">
+        <summary>Moderation tools</summary>
+        <div class="post-actions">
+          <% if (!post.is_hidden) { %>
+          <form method="post" action="/moderation/posts/<%= post.id %>/hide" class="inline-form">
+            <input type="text" name="reason" placeholder="Hide reason" />
+            <button class="btn btn-small btn-danger" type="submit">Hide post</button>
+          </form>
+          <% } else { %>
+          <form method="post" action="/moderation/posts/<%= post.id %>/unhide">
+            <button class="btn btn-small btn-muted" type="submit">Unhide post</button>
+          </form>
+          <% } %>
+        </div>
+      </details>
+      <% } %>
+    </article>
+
+    <section id="comments" class="panel comments-panel">
+      <header class="comments-head">
+        <h2><%= post.comment_count %> comments</h2>
+        <span>Best &#x2304;</span>
+      </header>
+
+      <% if (currentUser && currentUser.email_verified) { %>
+      <form method="post" action="/posts/<%= post.id %>/comments" class="comment-composer">
+        <textarea name="body" required minlength="2" maxlength="1500" placeholder="Comment..."></textarea>
+        <div class="comment-compose-actions">
+          <span class="fine-print">GIF</span>
+          <span class="fine-print">@</span>
+          <button class="btn" type="submit">Send</button>
+        </div>
+      </form>
+      <% } else if (currentUser) { %>
+      <p class="fine-print">Verify your email to comment.</p>
+      <% } else { %>
+      <p class="fine-print">You need to <a href="/login">log in</a> to comment.</p>
+      <% } %>
+
+      <div class="comment-list">
+        <% if (comments.length === 0) { %>
+        <p class="fine-print">No comments yet.</p>
+        <% } %>
+        <% for (const comment of comments) { %>
+        <article id="comment-<%= comment.id %>" class="comment-item" style="margin-left:<%= comment.indent_level * 18 %>px;">
+          <% if (comment.deep_collapsed) { %>
+          <details>
+            <summary>Deep thread by @<%= comment.author_username %></summary>
+            <p><%= comment.body %></p>
+          </details>
+          <% } else { %>
+          <header>
+            <a href="/u/<%= comment.author_username %>">@<%= comment.author_username %></a>
+            <span><%= comment.created_relative %></span>
+          </header>
+          <p><%= comment.body %></p>
+          <% } %>
+
           <% if (currentUser && currentUser.email_verified) { %>
           <div class="reaction-row">
             <% for (const reaction of reactions) { %>
             <form method="post" action="/posts/<%= post.id %>/comments/<%= comment.id %>/reactions">
               <input type="hidden" name="reaction_type" value="<%= reaction %>" />
               <button class="btn btn-small <%= comment.viewer_reactions.includes(reaction) ? 'btn-like-active' : 'btn-muted' %>" type="submit">
-                <%= reaction %> (<%= comment.reactions[reaction] %>)
+                <%= reaction %> <%= comment.reactions[reaction] %>
               </button>
             </form>
             <% } %>
           </div>
-          <form method="post" action="/posts/<%= post.id %>/comments/<%= comment.id %>/reply" class="reply-form">
-            <textarea name="body" required minlength="2" maxlength="1500" placeholder="Reply"></textarea>
-            <button class="btn btn-small" type="submit">Reply</button>
-          </form>
-          <form method="post" action="/reports" class="inline-form">
-            <input type="hidden" name="target_type" value="comment" />
-            <input type="hidden" name="target_id" value="<%= comment.id %>" />
-            <input type="hidden" name="reason_code" value="abuse" />
-            <input type="hidden" name="reason_text" value="Reported comment on post <%= post.id %>" />
-            <button class="btn btn-small btn-muted" type="submit">Report</button>
-          </form>
-          <% } %>
+
+          <div class="comment-reply-row">
+            <form method="post" action="/posts/<%= post.id %>/comments/<%= comment.id %>/reply" class="reply-form">
+              <textarea name="body" required minlength="2" maxlength="1500" placeholder="Reply"></textarea>
+              <button class="btn btn-small" type="submit">Reply</button>
+            </form>
+
+            <form method="post" action="/reports" class="inline-form">
+              <input type="hidden" name="target_type" value="comment" />
+              <input type="hidden" name="target_id" value="<%= comment.id %>" />
+              <input type="hidden" name="reason_code" value="abuse" />
+              <input type="hidden" name="reason_text" value="Reported comment on post <%= post.id %>" />
+              <button class="btn btn-small btn-muted" type="submit">Report</button>
+            </form>
+          </div>
 
           <% if (canModerate) { %>
-          <% if (!comment.is_hidden) { %>
-          <form method="post" action="/moderation/comments/<%= comment.id %>/hide" class="inline-form">
-            <input type="text" name="reason" placeholder="Hide reason" />
-            <button class="btn btn-small btn-danger" type="submit">Hide comment</button>
-          </form>
-          <% } else { %>
-          <form method="post" action="/moderation/comments/<%= comment.id %>/unhide">
-            <button class="btn btn-small btn-muted" type="submit">Unhide comment</button>
-          </form>
+          <div class="comment-mod-row">
+            <% if (!comment.is_hidden) { %>
+            <form method="post" action="/moderation/comments/<%= comment.id %>/hide" class="inline-form">
+              <input type="text" name="reason" placeholder="Hide reason" />
+              <button class="btn btn-small btn-danger" type="submit">Hide comment</button>
+            </form>
+            <% } else { %>
+            <form method="post" action="/moderation/comments/<%= comment.id %>/unhide">
+              <button class="btn btn-small btn-muted" type="submit">Unhide comment</button>
+            </form>
+            <% } %>
+          </div>
           <% } %>
           <% } %>
+        </article>
+        <% } %>
+      </div>
+    </section>
+
+    <% if (canModerate && auditTrail && auditTrail.length > 0) { %>
+    <section class="panel">
+      <h3>Moderation audit</h3>
+      <div class="compact-list">
+        <% for (const action of auditTrail) { %>
+        <div>
+          <strong><%= action.action_type %></strong>
+          <span>@<%= action.actor_username %> <%= new Date(action.created_at).toLocaleString() %></span>
         </div>
-      </article>
-      <% } %>
-    </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
   </section>
 
-  <% if (canModerate && auditTrail && auditTrail.length > 0) { %>
-  <section class="panel">
-    <h3>Moderation audit (post)</h3>
-    <div class="compact-list">
-      <% for (const action of auditTrail) { %>
-      <div>
-        <strong><%= action.action_type %></strong>
-        <span>@<%= action.actor_username %> • <%= new Date(action.created_at).toLocaleString() %></span>
-      </div>
-      <% } %>
-    </div>
-  </section>
-  <% } %>
+  <%- include("partials/right-rail") %>
 </section>
 
 <%- include("partials/footer") %>

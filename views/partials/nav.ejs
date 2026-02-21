@@ -1,27 +1,76 @@
 <header class="topbar">
+  <% const noteList = Array.isArray(notifications) ? notifications : []; %>
   <div class="topbar-inner">
-    <a class="wordmark" href="/">VIKS MEDIA</a>
+    <a class="wordmark" href="/">VIKS</a>
+    <% if (activePath && activePath !== '/') { %>
+    <a class="back-btn" href="/" aria-label="Back">&#x2039;</a>
+    <% } %>
+
     <div class="topbar-spacer"></div>
-    <div class="topbar-actions">
-      <a class="icon-btn" href="/search" aria-label="Search">
-        <span>⌕</span>
-      </a>
-      <% if (currentUser) { %>
-      <a class="pill-btn pill-ghost" href="<%= currentUser.email_verified ? '/posts/new' : '/account' %>">
-        <span class="pill-icon">✎</span>
-        <span>Write</span>
-      </a>
-      <a class="pill-btn pill-user" href="/account">@<%= currentUser.username %></a>
-      <form method="post" action="/logout">
-        <button class="pill-btn pill-primary" type="submit">Log out</button>
-      </form>
-      <% } else { %>
-      <a class="pill-btn pill-ghost" href="/login">
-        <span class="pill-icon">✎</span>
-        <span>Write</span>
-      </a>
-      <a class="pill-btn pill-primary" href="/login">Log in</a>
-      <% } %>
-    </div>
+
+    <a class="icon-btn" href="/search?q=<%= encodeURIComponent(query || '') %>" aria-label="Search">
+      <span>&#x1F50D;</span>
+    </a>
+
+    <% if (currentUser) { %>
+    <details class="notify-wrap">
+      <summary class="icon-btn <%= noteList.length ? 'has-alert' : '' %>" aria-label="Notifications">
+        <span>&#x1F514;</span>
+      </summary>
+      <section class="notify-dropdown">
+        <header>
+          <strong>Notifications</strong>
+          <a href="/notifications">View all</a>
+        </header>
+        <div class="notify-list">
+          <% if (noteList.length === 0) { %>
+          <p class="notify-empty">No activity yet.</p>
+          <% } %>
+          <% for (const item of noteList.slice(0, 10)) { %>
+          <a class="notify-item" href="/posts/<%= item.post_id %>">
+            <img
+              src="<%= item.actor_avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+              alt="<%= item.actor_username %>"
+            />
+            <span>
+              <strong><%= item.actor_username %></strong> <%= item.message %>
+              <small><%= item.context %></small>
+            </span>
+          </a>
+          <% } %>
+        </div>
+      </section>
+    </details>
+
+    <a class="pill-btn pill-ghost" href="<%= currentUser.email_verified ? '/posts/new' : '/account' %>">
+      <span class="pill-icon">&#x270E;</span>
+      <span>Write</span>
+    </a>
+
+    <details class="user-menu-wrap">
+      <summary class="user-chip" aria-label="Account menu">
+        <img
+          src="<%= currentUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+          alt="<%= currentUser.username %>"
+        />
+        <span class="caret">&#x2304;</span>
+      </summary>
+      <div class="user-dropdown">
+        <a href="/account">My profile</a>
+        <a href="/bookmarks">Bookmarks</a>
+        <% if (canModerate) { %><a href="/moderation/queue">Moderation</a><% } %>
+        <% if (canAdmin) { %><a href="/admin/users">Admin</a><% } %>
+        <form method="post" action="/logout">
+          <button type="submit">Log out</button>
+        </form>
+      </div>
+    </details>
+    <% } else { %>
+    <a class="pill-btn pill-ghost" href="/login">
+      <span class="pill-icon">&#x270E;</span>
+      <span>Write</span>
+    </a>
+    <a class="pill-btn pill-primary" href="/login">Log in</a>
+    <% } %>
   </div>
 </header>

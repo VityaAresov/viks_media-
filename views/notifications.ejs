@@ -1,0 +1,35 @@
+<%- include("partials/head", { pageTitle }) %>
+
+<section class="app-shell">
+  <%- include("partials/left-rail", { filters: null, selectedTag: null }) %>
+
+  <section class="feed-main">
+    <section class="panel notifications-page">
+      <h1>Notifications</h1>
+      <p class="fine-print">Recent activity on your publications.</p>
+
+      <div class="notify-list-page">
+        <% if (!items || items.length === 0) { %>
+        <p class="fine-print">No notifications yet.</p>
+        <% } %>
+
+        <% for (const item of items || []) { %>
+        <a class="notify-item" href="/posts/<%= item.post_id %>">
+          <img
+            src="<%= item.actor_avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+            alt="<%= item.actor_username %>"
+          />
+          <span>
+            <strong><%= item.actor_username %></strong> <%= item.message %>
+            <small><%= item.context %></small>
+          </span>
+        </a>
+        <% } %>
+      </div>
+    </section>
+  </section>
+
+  <%- include("partials/right-rail") %>
+</section>
+
+<%- include("partials/footer") %>

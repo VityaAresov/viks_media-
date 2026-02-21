@@ -1,23 +1,29 @@
 <%- include("partials/head", { pageTitle }) %>
 
-<section class="center-wrap">
-  <div class="panel auth-card">
-    <h1>Log in</h1>
-    <p>Access your media account to publish, like, and comment.</p>
-    <form method="post" action="/login" class="stack-form">
-      <label>
-        Email
-        <input type="email" name="email" required placeholder="creator@example.com" />
-      </label>
-      <label>
-        Password
-        <input type="password" name="password" required placeholder="Your password" />
-      </label>
-      <button class="btn" type="submit">Log in</button>
-    </form>
-    <p class="fine-print"><a href="/forgot-password">Forgot password?</a></p>
-    <p class="fine-print">No account yet? <a href="/register">Register</a>.</p>
-  </div>
+<section class="app-shell">
+  <%- include("partials/left-rail", { filters: null, selectedTag: null }) %>
+
+  <section class="feed-main auth-main">
+    <div class="panel auth-card">
+      <h1>Log in</h1>
+      <p>Access your media account to publish, like, and comment.</p>
+      <form method="post" action="/login" class="stack-form">
+        <label>
+          Email
+          <input type="email" name="email" required placeholder="creator@example.com" />
+        </label>
+        <label>
+          Password
+          <input type="password" name="password" required placeholder="Your password" />
+        </label>
+        <button class="btn" type="submit">Log in</button>
+      </form>
+      <p class="fine-print"><a href="/forgot-password">Forgot password?</a></p>
+      <p class="fine-print">No account yet? <a href="/register">Register</a>.</p>
+    </div>
+  </section>
+
+  <%- include("partials/right-rail") %>
 </section>
 
 <%- include("partials/footer") %>

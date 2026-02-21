@@ -1,11 +1,17 @@
 <%- include("partials/head", { pageTitle }) %>
 
-<section class="center-wrap">
-  <div class="panel auth-card">
-    <h1>404</h1>
-    <p>The page you requested does not exist.</p>
-    <a class="btn" href="/">Return to feed</a>
-  </div>
+<section class="app-shell">
+  <%- include("partials/left-rail", { filters: null, selectedTag: null }) %>
+
+  <section class="feed-main auth-main">
+    <div class="panel auth-card">
+      <h1>404</h1>
+      <p>The page you requested does not exist.</p>
+      <a class="btn" href="/">Return to feed</a>
+    </div>
+  </section>
+
+  <%- include("partials/right-rail") %>
 </section>
 
 <%- include("partials/footer") %>
