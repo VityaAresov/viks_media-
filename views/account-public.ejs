@@ -1,0 +1,47 @@
+<%- include("partials/head", { pageTitle }) %>
+
+<section class="account-layout single-column">
+  <section class="panel profile-card">
+    <div class="profile-header">
+      <img
+        src="<%= profileUser.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=160&q=80' %>"
+        alt="<%= profileUser.username %>"
+      />
+      <div>
+        <h1>@<%= profileUser.username %></h1>
+        <p>Joined <%= new Date(profileUser.created_at).toLocaleDateString() %></p>
+      </div>
+    </div>
+    <p class="profile-bio"><%= profileUser.bio || 'No bio yet.' %></p>
+    <div class="profile-stats">
+      <div>
+        <strong><%= posts.length %></strong>
+        <span>Publications</span>
+      </div>
+      <div>
+        <strong><%= profileUser.role %></strong>
+        <span>Role</span>
+      </div>
+    </div>
+  </section>
+</section>
+
+<section class="panel">
+  <h2>Publications by @<%= profileUser.username %></h2>
+  <% if (posts.length === 0) { %>
+  <p class="fine-print">No publications yet.</p>
+  <% } %>
+  <div class="compact-list">
+    <% for (const post of posts) { %>
+    <a href="/posts/<%= post.id %>">
+      <strong><%= post.title %></strong>
+      <span>
+        <%= post.category_name %> • <%= post.reading_time_minutes %> min •
+        <%= post.like_count %> likes • <%= post.comment_count %> comments
+      </span>
+    </a>
+    <% } %>
+  </div>
+</section>
+
+<%- include("partials/footer") %>

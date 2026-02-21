@@ -1,0 +1,195 @@
+<%- include("partials/head", { pageTitle, query }) %>
+
+<section class="layout-grid">
+  <aside class="sidebar sidebar-left">
+    <div class="panel">
+      <h3>Categories</h3>
+      <div class="category-list">
+        <a class="category-link <%= !filters.category ? 'is-active' : '' %>" href="/">All publications</a>
+        <% for (const category of categories) { %>
+        <a
+          class="category-link <%= filters.category === category.slug ? 'is-active' : '' %>"
+          href="/?<%= new URLSearchParams({ category: category.slug, tag: filters.tag || '', q: filters.q || '' }).toString() %>"
+        >
+          <span><%= category.name %></span>
+          <small><%= category.description %></small>
+        </a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Popular tags</h3>
+      <div class="tag-cloud">
+        <% for (const tag of popularTags.slice(0, 16)) { %>
+        <a
+          class="tag-chip <%= selectedTag && selectedTag.slug === tag.slug ? 'is-active' : '' %>"
+          href="/?<%= new URLSearchParams({ category: filters.category || '', tag: tag.slug, q: filters.q || '' }).toString() %>"
+        >
+          #<%= tag.slug %> <span><%= tag.usage_count %></span>
+        </a>
+        <% } %>
+      </div>
+    </div>
+  </aside>
+
+  <section class="feed">
+    <header class="feed-header">
+      <div>
+        <h1>
+          <%= query ? `Search: ${query}` : selectedTag ? `#${selectedTag.slug}` : selectedCategory ? selectedCategory.name : 'Media feed' %>
+        </h1>
+        <p>
+          <% if (query) { %>
+          Search results across title, body, author, tags, and categories.
+          <% } else if (selectedTag) { %>
+          Tagged publications from creators and editorial teams.
+          <% } else if (selectedCategory) { %>
+          <%= selectedCategory.description %>
+          <% } else { %>
+          Publications by videographers, photographers, and creator teams.
+          <% } %>
+        </p>
+      </div>
+      <% if (currentUser && currentUser.email_verified) { %>
+      <a class="btn" href="/posts/new">Publish now</a>
+      <% } %>
+    </header>
+
+    <% if (posts.length === 0) { %>
+    <div class="panel">
+      <h3>No publications yet</h3>
+      <p>Try another filter or create the first publication.</p>
+      <% if (currentUser && currentUser.email_verified) { %>
+      <a class="btn" href="/posts/new">Create publication</a>
+      <% } else if (!currentUser) { %>
+      <a class="btn" href="/register">Create account</a>
+      <% } %>
+    </div>
+    <% } %>
+
+    <div class="post-stream">
+      <% for (const post of posts) { %>
+      <article class="post-card <%= post.is_hidden ? 'post-hidden' : '' %>">
+        <header class="post-meta">
+          <a class="meta-user" href="/u/<%= post.author_username %>">
+            <img
+              src="<%= post.author_avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+              alt="<%= post.author_username %>"
+            />
+            <div>
+              <strong><%= post.author_username %></strong>
+              <span><%= post.created_relative %></span>
+            </div>
+          </a>
+          <a class="category-pill" href="/categories/<%= post.category_slug %>"><%= post.category_name %></a>
+        </header>
+
+        <% if (post.is_hidden) { %>
+        <p class="hidden-note">This publication is hidden by moderation. Reason: <%= post.hidden_reason || 'not specified' %>.</p>
+        <% } %>
+
+        <a class="post-title" href="/posts/<%= post.id %>"><%= post.title %></a>
+        <p class="post-excerpt"><%= post.excerpt %></p>
+        <div class="post-meta-line">
+          <span><%= post.reading_time_minutes %> min read</span>
+          <% if (post.tags.length) { %>
+          <span>
+            <% for (const tag of post.tags) { %>
+            <a href="/tags/<%= tag.slug %>">#<%= tag.slug %></a>
+            <% } %>
+          </span>
+          <% } %>
+        </div>
+
+        <% if (post.media_type === "image" && post.media_url) { %>
+        <img class="post-media" src="<%= post.media_url %>" alt="<%= post.title %>" />
+        <% } %>
+        <% if (post.media_type === "video" && post.media_url) { %>
+        <% if (post.youtube_embed_url) { %>
+        <div class="video-wrap">
+          <iframe
+            src="<%= post.youtube_embed_url %>"
+            title="<%= post.title %>"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <% } else { %>
+        <video class="post-media" controls src="<%= post.media_url %>"></video>
+        <% } %>
+        <% } %>
+
+        <footer class="post-actions">
+          <% if (currentUser && currentUser.email_verified) { %>
+          <form method="post" action="/posts/<%= post.id %>/like">
+            <button class="btn btn-small <%= post.liked_by_me ? 'btn-like-active' : 'btn-muted' %>" type="submit">
+              <%= post.liked_by_me ? 'Liked' : 'Like' %> (<%= post.like_count %>)
+            </button>
+          </form>
+          <form method="post" action="/posts/<%= post.id %>/bookmark">
+            <button class="btn btn-small <%= post.bookmarked_by_me ? 'btn-bookmark-active' : 'btn-muted' %>" type="submit">
+              <%= post.bookmarked_by_me ? 'Bookmarked' : 'Bookmark' %> (<%= post.bookmark_count %>)
+            </button>
+          </form>
+          <% } else { %>
+          <a class="btn btn-small btn-muted" href="/login">Like (<%= post.like_count %>)</a>
+          <% } %>
+          <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>#comments">Comments (<%= post.comment_count %>)</a>
+          <a class="btn btn-small btn-muted" href="/posts/<%= post.id %>">Open</a>
+          <% if (currentUser && currentUser.email_verified) { %>
+          <form method="post" action="/reports" class="inline-form">
+            <input type="hidden" name="target_type" value="post" />
+            <input type="hidden" name="target_id" value="<%= post.id %>" />
+            <input type="hidden" name="reason_code" value="abuse" />
+            <input type="hidden" name="reason_text" value="Reported from feed" />
+            <button class="btn btn-small btn-muted" type="submit">Report</button>
+          </form>
+          <% } %>
+        </footer>
+      </article>
+      <% } %>
+    </div>
+
+    <% if (pagination.pages > 1) { %>
+    <nav class="pagination">
+      <% if (pagination.page > 1) { %>
+      <a href="/?<%= new URLSearchParams({ category: filters.category || '', tag: filters.tag || '', q: filters.q || '', page: pagination.page - 1 }).toString() %>">Previous</a>
+      <% } %>
+      <span>Page <%= pagination.page %> of <%= pagination.pages %></span>
+      <% if (pagination.page < pagination.pages) { %>
+      <a href="/?<%= new URLSearchParams({ category: filters.category || '', tag: filters.tag || '', q: filters.q || '', page: pagination.page + 1 }).toString() %>">Next</a>
+      <% } %>
+    </nav>
+    <% } %>
+  </section>
+
+  <aside class="sidebar sidebar-right">
+    <div class="panel">
+      <h3>Trending posts</h3>
+      <div class="compact-list">
+        <% for (const item of trending) { %>
+        <a href="/posts/<%= item.id %>">
+          <strong><%= item.title %></strong>
+          <span>@<%= item.author_username %> • <%= item.like_count %> likes</span>
+        </a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Top creators</h3>
+      <div class="compact-list">
+        <% for (const creator of creators) { %>
+        <a href="/u/<%= creator.username %>">
+          <strong>@<%= creator.username %></strong>
+          <span><%= creator.post_count %> posts • <%= creator.received_likes %> likes</span>
+        </a>
+        <% } %>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<%- include("partials/footer") %>

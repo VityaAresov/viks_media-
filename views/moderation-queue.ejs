@@ -1,0 +1,54 @@
+<%- include("partials/head", { pageTitle }) %>
+
+<section class="panel">
+  <h1>Moderation queue</h1>
+  <div class="tab-row">
+    <a class="<%= status === 'open' ? 'is-active' : '' %>" href="/moderation/queue?status=open">Open</a>
+    <a class="<%= status === 'in_review' ? 'is-active' : '' %>" href="/moderation/queue?status=in_review">In review</a>
+    <a class="<%= status === 'resolved' ? 'is-active' : '' %>" href="/moderation/queue?status=resolved">Resolved</a>
+    <a class="<%= status === 'dismissed' ? 'is-active' : '' %>" href="/moderation/queue?status=dismissed">Dismissed</a>
+    <a class="<%= status === 'all' ? 'is-active' : '' %>" href="/moderation/queue?status=all">All</a>
+  </div>
+
+  <% if (reports.items.length === 0) { %>
+  <p class="fine-print">No reports in this state.</p>
+  <% } %>
+
+  <div class="compact-list">
+    <% for (const report of reports.items) { %>
+    <article class="moderation-item">
+      <strong>#<%= report.id %> • <%= report.target_type %> #<%= report.target_id %> • <%= report.status %></strong>
+      <span>Reporter: @<%= report.reporter_username %> • Assigned: <%= report.assignee_username || 'nobody' %></span>
+      <p><%= report.reason_code %> - <%= report.reason_text || 'No note' %></p>
+
+      <div class="post-actions">
+        <form method="post" action="/moderation/reports/<%= report.id %>/assign">
+          <button class="btn btn-small btn-muted" type="submit">Assign to me</button>
+        </form>
+        <form method="post" action="/moderation/reports/<%= report.id %>/resolve" class="inline-form">
+          <input type="hidden" name="status" value="resolved" />
+          <button class="btn btn-small" type="submit">Resolve</button>
+        </form>
+        <form method="post" action="/moderation/reports/<%= report.id %>/resolve" class="inline-form">
+          <input type="hidden" name="status" value="dismissed" />
+          <button class="btn btn-small btn-muted" type="submit">Dismiss</button>
+        </form>
+      </div>
+    </article>
+    <% } %>
+  </div>
+
+  <% if (reports.pages > 1) { %>
+  <nav class="pagination">
+    <% if (reports.page > 1) { %>
+    <a href="/moderation/queue?status=<%= status %>&page=<%= reports.page - 1 %>">Previous</a>
+    <% } %>
+    <span>Page <%= reports.page %> of <%= reports.pages %></span>
+    <% if (reports.page < reports.pages) { %>
+    <a href="/moderation/queue?status=<%= status %>&page=<%= reports.page + 1 %>">Next</a>
+    <% } %>
+  </nav>
+  <% } %>
+</section>
+
+<%- include("partials/footer") %>

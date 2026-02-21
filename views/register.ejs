@@ -1,0 +1,26 @@
+<%- include("partials/head", { pageTitle }) %>
+
+<section class="center-wrap">
+  <div class="panel auth-card">
+    <h1>Create account</h1>
+    <p>Join creators publishing visuals, edits, and media stories.</p>
+    <form method="post" action="/register" class="stack-form">
+      <label>
+        Username
+        <input type="text" name="username" minlength="3" maxlength="24" required placeholder="yourname" />
+      </label>
+      <label>
+        Email
+        <input type="email" name="email" required placeholder="creator@example.com" />
+      </label>
+      <label>
+        Password
+        <input type="password" name="password" minlength="6" required placeholder="At least 6 characters" />
+      </label>
+      <button class="btn" type="submit">Register</button>
+    </form>
+    <p class="fine-print">Already have an account? <a href="/login">Log in</a>.</p>
+  </div>
+</section>
+
+<%- include("partials/footer") %>

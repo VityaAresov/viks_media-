@@ -1,0 +1,16 @@
+<% if (flash && flash.message) { %>
+<div class="flash flash-<%= flash.type === 'success' ? 'success' : 'error' %>"><%= flash.message %></div>
+<% } %>
+
+<% if (currentUser && !currentUser.email_verified) { %>
+<div class="flash flash-warning">
+  <strong>Email not verified.</strong> Verify to publish, comment, like, bookmark, and report.
+  <form method="post" action="/resend-verification" class="inline-form">
+    <button type="submit" class="btn btn-small btn-muted">Resend verification email</button>
+  </form>
+</div>
+<% } %>
+
+<% if (currentUser && currentUser.status !== "active") { %>
+<div class="flash flash-error">Your account is currently <%= currentUser.status %>.</div>
+<% } %>

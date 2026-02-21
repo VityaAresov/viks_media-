@@ -1,0 +1,103 @@
+<%- include("partials/head", { pageTitle }) %>
+
+<section class="center-wrap wide-wrap">
+  <div class="panel form-card">
+    <h1>New publication</h1>
+    <p>Write in markdown, add tags, and attach media URL.</p>
+
+    <form method="post" action="/posts" class="stack-form" id="new-post-form">
+      <label>
+        Category
+        <select name="category_id" required>
+          <% for (const category of categories) { %>
+          <option value="<%= category.id %>"><%= category.name %> - <%= category.description %></option>
+          <% } %>
+        </select>
+      </label>
+
+      <label>
+        Title
+        <input type="text" name="title" required minlength="6" maxlength="160" placeholder="How I shot this rooftop sequence in one take" />
+      </label>
+
+      <label>
+        Tags (comma-separated, max 5)
+        <input type="text" name="tags" maxlength="120" placeholder="videography, color-grading, tutorial" />
+      </label>
+
+      <label>
+        Publication markdown
+        <textarea
+          name="markdown_body"
+          id="markdown_body"
+          required
+          minlength="20"
+          maxlength="20000"
+          placeholder="## Setup&#10;Share your process, settings, workflow, and final results."
+        ></textarea>
+      </label>
+
+      <div class="row-fields">
+        <label>
+          Media type
+          <select name="media_type">
+            <option value="none">No media</option>
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+          </select>
+        </label>
+
+        <label>
+          Media URL
+          <input type="url" name="media_url" placeholder="https://..." />
+        </label>
+      </div>
+
+      <div class="editor-actions">
+        <button class="btn btn-muted" type="button" id="preview-btn">Preview markdown</button>
+        <button class="btn" type="submit">Publish</button>
+      </div>
+    </form>
+  </div>
+
+  <section class="panel markdown-preview-card">
+    <h2>Preview</h2>
+    <div id="markdown-preview" class="markdown-rendered">
+      <p class="fine-print">Click "Preview markdown" to render your post.</p>
+    </div>
+  </section>
+</section>
+
+<script>
+  (() => {
+    const previewButton = document.getElementById("preview-btn");
+    const markdownInput = document.getElementById("markdown_body");
+    const preview = document.getElementById("markdown-preview");
+    if (!previewButton || !markdownInput || !preview) return;
+
+    previewButton.addEventListener("click", async () => {
+      previewButton.disabled = true;
+      previewButton.textContent = "Rendering...";
+      try {
+        const response = await fetch("/preview-markdown", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ markdown: markdownInput.value })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          preview.innerHTML = "<p class='fine-print'>Preview failed.</p>";
+        } else {
+          preview.innerHTML = data.html || "<p class='fine-print'>No content.</p>";
+        }
+      } catch (error) {
+        preview.innerHTML = "<p class='fine-print'>Preview failed.</p>";
+      } finally {
+        previewButton.disabled = false;
+        previewButton.textContent = "Preview markdown";
+      }
+    });
+  })();
+</script>
+
+<%- include("partials/footer") %>
