@@ -481,7 +481,15 @@ a {
   color: #ccd3e0;
   padding: 8px;
   border-radius: 11px;
-  font-size: 22px;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.topic-row span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .topic-row:hover,
@@ -1076,11 +1084,22 @@ textarea {
 
 .profile-hero-body {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 18px;
   align-items: end;
   padding: 0 16px 14px;
   margin-top: -46px;
+}
+
+.profile-hero-meta {
+  min-width: 0;
+}
+
+.profile-hero-meta h1,
+.post-title,
+.user-profile-card strong,
+.menu-label {
+  overflow-wrap: anywhere;
 }
 
 .profile-avatar {
