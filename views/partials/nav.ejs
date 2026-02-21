@@ -63,12 +63,76 @@
         <span class="caret">&#x2304;</span>
       </summary>
       <div class="user-dropdown">
-        <a href="/account">My profile</a>
-        <a href="/bookmarks">Bookmarks</a>
-        <% if (canMod) { %><a href="/moderation/queue">Moderation</a><% } %>
-        <% if (canAdminFlag) { %><a href="/admin/users">Admin</a><% } %>
-        <form method="post" action="/logout">
-          <button type="submit">Log out</button>
+        <div class="user-dropdown-head">My profile</div>
+
+        <a class="user-profile-card" href="/account">
+          <img
+            src="<%= user.avatar_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=80&q=80' %>"
+            alt="<%= user.username %>"
+          />
+          <span>
+            <strong><%= user.username %></strong>
+            <small>@id<%= user.id %></small>
+          </span>
+        </a>
+
+        <nav class="user-menu-list" aria-label="Profile menu">
+          <a class="menu-row" href="/account?tab=posts">
+            <span class="menu-icon">&#x270E;</span>
+            <span class="menu-label">Drafts</span>
+          </a>
+
+          <a class="menu-row" href="/bookmarks">
+            <span class="menu-icon">&#x1F516;</span>
+            <span class="menu-label">Bookmarks</span>
+          </a>
+
+          <a class="menu-row" href="/account">
+            <span class="menu-icon">&#x1F3C6;</span>
+            <span class="menu-label">Achievements</span>
+          </a>
+
+          <a class="menu-row menu-row-split" href="/account">
+            <span class="menu-main">
+              <span class="menu-icon">&#x20BD;</span>
+              <span class="menu-label">Donations</span>
+            </span>
+            <span class="menu-chip">Connect</span>
+          </a>
+
+          <a class="menu-row menu-row-split" href="/account?tab=settings">
+            <span class="menu-main">
+              <span class="menu-icon">&#x2699;</span>
+              <span class="menu-label">Settings</span>
+            </span>
+            <span class="menu-toggle-dot" aria-hidden="true"></span>
+          </a>
+
+          <a class="menu-row" href="/account">
+            <span class="menu-icon">&#x1F48E;</span>
+            <span class="menu-label">Plus subscription</span>
+          </a>
+
+          <% if (canMod) { %>
+          <a class="menu-row" href="/moderation/queue">
+            <span class="menu-icon">&#x1F6E1;</span>
+            <span class="menu-label">Moderation</span>
+          </a>
+          <% } %>
+
+          <% if (canAdminFlag) { %>
+          <a class="menu-row" href="/admin/users">
+            <span class="menu-icon">&#x1F4BC;</span>
+            <span class="menu-label">Admin</span>
+          </a>
+          <% } %>
+        </nav>
+
+        <form class="menu-logout-form" method="post" action="/logout">
+          <button class="menu-row menu-logout-btn" type="submit">
+            <span class="menu-icon">&#x21AA;</span>
+            <span class="menu-label">Log out</span>
+          </button>
         </form>
       </div>
     </details>

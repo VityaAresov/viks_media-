@@ -52,7 +52,7 @@ a {
   max-width: 1540px;
   height: 100%;
   margin: 0 auto;
-  padding: 0 30px;
+  padding: 0 100px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -245,34 +245,124 @@ a {
 }
 
 .user-dropdown {
-  width: 210px;
-  padding: 8px;
+  width: 390px;
+  padding: 10px 10px 12px;
+  background: linear-gradient(180deg, #1d2129, #1a1d24);
 }
 
-.user-dropdown a,
-.user-dropdown button {
+.user-dropdown-head {
+  color: #d5dbea;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 8px 10px 10px;
+}
+
+.user-profile-card {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 12px;
+  align-items: center;
+  text-decoration: none;
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 6px;
+}
+
+.user-profile-card img {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.user-profile-card strong {
+  display: block;
+  color: #f0f4fb;
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.user-profile-card small {
+  color: #a7afc0;
+  font-size: 14px;
+}
+
+.user-menu-list {
+  display: grid;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-decoration: none;
+  color: #e0e5f0;
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: transparent;
+}
+
+.menu-row:hover {
+  background: #2a3040;
+}
+
+.menu-icon {
+  width: 22px;
+  text-align: center;
+  color: #c0c9d9;
+  font-size: 18px;
+}
+
+.menu-label {
+  font-size: 15px;
+}
+
+.menu-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-row-split {
+  justify-content: space-between;
+}
+
+.menu-chip {
+  border-radius: 999px;
+  background: #3a4153;
+  color: #eef2fb;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+}
+
+.menu-toggle-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 50%, #f9fbff 40%, #4f5f7f 42%);
+}
+
+.menu-logout-form {
+  margin-top: 4px;
+}
+
+.menu-logout-btn {
   width: 100%;
   border: 0;
-  background: transparent;
-  color: #d9deea;
-  text-decoration: none;
-  text-align: left;
-  padding: 10px;
-  border-radius: 9px;
-  font-family: inherit;
-  font-size: 14px;
   cursor: pointer;
-}
-
-.user-dropdown a:hover,
-.user-dropdown button:hover {
-  background: #2a3040;
+  text-align: left;
+  font-family: inherit;
 }
 
 .page-shell {
   max-width: 1540px;
   margin: 0 auto;
-  padding: 14px 30px 30px;
+  padding: 14px 100px 30px;
 }
 
 .flash {
@@ -1474,6 +1564,11 @@ textarea,
     right: -70px;
   }
 
+  .user-dropdown {
+    width: min(92vw, 390px);
+    right: -6px;
+  }
+
   .profile-hero-body {
     grid-template-columns: 1fr;
     margin-top: -44px;
@@ -1554,5 +1649,9 @@ textarea,
 
   .notify-dropdown {
     right: -140px;
+  }
+
+  .user-dropdown {
+    right: -8px;
   }
 }
